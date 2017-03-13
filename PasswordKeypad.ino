@@ -16,8 +16,6 @@ char keyword_in[4];
 char keyword_set[] = {'2','3','5','6'};
 
 int zaehler = 0;
-int abc = 1;
-int test = 0; 
 
 byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
@@ -75,7 +73,8 @@ void keypadEvent(KeypadEvent key){
         }
         if (key == '*') {
           if (zaehler == 4){
-            if (keyword_in == keyword_set){
+            if (keyword_in[0] == keyword_set[0] and keyword_in[1] == keyword_set[1] and
+                keyword_in[2] == keyword_set[2] and keyword_in[3] == keyword_set[3]){
               Serial.println("You got the right Code");
               zaehler = 0;
               keyword_in[4];
