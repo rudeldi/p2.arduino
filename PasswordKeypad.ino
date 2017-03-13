@@ -11,6 +11,7 @@ char keys[ROWS][COLS] = {
     {'7','8','9'},
     {'*','0','#'}
 };
+int check = 1; //Variable um Fkt1 zu deaktivieren, 0 = aus
 
 char keyword_in[4];
 char keyword_set[] = {'2','3','5','6'};
@@ -35,23 +36,25 @@ void setup(){
 }
 
 void loop(){
-    char key = keypad.getKey();
-
-    if (key) {
-        
-        if (zaehler <= 3){
-          keyword_in[zaehler] = key;
-          zaehler += 1;
-        }
-        
-        Serial.println(key);
-        Serial.println(keyword_set);
-        Serial.println(keyword_in);
-        
-        if (zaehler == 4){
-          Serial.println("Press * for check password");
-          Serial.println("Press # for delete last number");
-        }
+    if (check){
+      char key = keypad.getKey();
+  
+      if (key) {
+          
+          if (zaehler <= 3){
+            keyword_in[zaehler] = key;
+            zaehler += 1;
+          }
+          
+          Serial.println(key);
+          Serial.println(keyword_set);
+          Serial.println(keyword_in);
+          
+          if (zaehler == 4){
+            Serial.println("Press * for check password");
+            Serial.println("Press # for delete last number");
+          }
+      }
     }
     if (blink){
         digitalWrite(ledPin,!digitalRead(ledPin));    // Change the ledPin from Hi2Lo or Lo2Hi.
