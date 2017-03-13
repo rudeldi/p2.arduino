@@ -15,7 +15,9 @@ char keys[ROWS][COLS] = {
 char keyword_in[4];
 char keyword_set[] = {'2','3','5','6'};
 
-int zaehler = 1;
+int zaehler = 0;
+int abc = 1;
+
 int test = 0; 
 
 
