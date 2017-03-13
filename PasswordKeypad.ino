@@ -17,9 +17,7 @@ char keyword_set[] = {'2','3','5','6'};
 
 int zaehler = 0;
 int abc = 1;
-
 int test = 0; 
-
 
 byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
