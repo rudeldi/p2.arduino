@@ -16,6 +16,11 @@ char keyword_in[4];
 char keyword_set[] = {'2','3','5','6'};
 
 int zaehler = 0;
+<<<<<<< HEAD
+=======
+int abc = 1;
+
+>>>>>>> james_branch_1
 int test = 0; 
 
 byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
