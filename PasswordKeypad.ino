@@ -38,12 +38,12 @@ void setup(){
     ledPin_state = digitalRead(ledPin);   // Store initial LED state. HIGH when LED is on.
     keypad.addEventListener(keypadEvent); // Add an event listener for this keypad
     lcd.begin(16, 2);                     // Activates 16 x 2 lcd
+    LCDwelcomeScreen(); 
 }
 
 void loop(){
     if (check){
       char key = keypad.getKey();
-      LCDwelcomeScreen();
          
       if (key) {
           
@@ -126,8 +126,8 @@ void LCDwelcomeScreen(){
     lcd.clear();
     lcd.setCursor(0, 0);          // (pos, row) starting with 0
     lcd.print("Enter Serial Nr:"); 
-    lcd.setCursor(0, 1);
-    lcd.print("===MCTUBS===");  
+    lcd.setCursor(2, 1);
+    lcd.print("===MCTUBS==="); 
 }
 
 void LCDpassword(){
