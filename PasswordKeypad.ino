@@ -27,22 +27,29 @@ byte ledPin = 13;
 boolean blink = false;
 boolean ledPin_state;
 
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(14, 13, 12, 11, 10, 9); // Creates lcd object
+
 void setup(){
     Serial.begin(9600);
     pinMode(ledPin, OUTPUT);              // Sets the digital pin as output.
     digitalWrite(ledPin, HIGH);           // Turn the LED on.
     ledPin_state = digitalRead(ledPin);   // Store initial LED state. HIGH when LED is on.
     keypad.addEventListener(keypadEvent); // Add an event listener for this keypad
+    lcd.begin(16, 2);                     // Activates 16 x 2 lcd
+    LCDwelcomeScreen(); 
 }
 
 void loop(){
     if (check){
       char key = keypad.getKey();
-  
+         
       if (key) {
           
           if (zaehler <= 3){
             keyword_in[zaehler] = key;
+            LCDpassword();   
             zaehler += 1;
           }
           
@@ -53,6 +60,8 @@ void loop(){
           if (zaehler == 4){
             Serial.println("Press * for check password");
             Serial.println("Press # for delete last number");
+            lcd.setCursor(0, 1);
+            lcd.print("Press * Confirm");            // Visual cue
           }
       }
     }
@@ -79,6 +88,7 @@ void keypadEvent(KeypadEvent key){
             if (keyword_in[0] == keyword_set[0] and keyword_in[1] == keyword_set[1] and
                 keyword_in[2] == keyword_set[2] and keyword_in[3] == keyword_set[3]){
               Serial.println("You got the right Code");
+              LCDcorrect();
               zaehler = 0;
               keyword_in[4];
               break;
@@ -86,6 +96,7 @@ void keypadEvent(KeypadEvent key){
             if (keyword_in != keyword_set){
               Serial.println("Your Code is WRONG");
               Serial.println("Your timeout is 300 seconds");
+              LCDwrong();                      
               break;
             }
           }
@@ -109,3 +120,62 @@ void keypadEvent(KeypadEvent key){
         break;
     }
 }
+
+//===LCD functions by James Low
+void LCDwelcomeScreen(){
+    lcd.clear();
+    lcd.setCursor(0, 0);          // (pos, row) starting with 0
+    lcd.print("Enter Serial Nr:"); 
+    lcd.setCursor(2, 1);
+    lcd.print("===MCTUBS==="); 
+}
+
+void LCDpassword(){
+    lcd.clear();                    
+    for(int i=0; i<=zaehler; i++){  // for loop required for #Delete f(x)
+        lcd.setCursor(zaehler, 0);  
+        lcd.print(keyword_in[zaehler]);              
+        lcd.setCursor(0, 1); 
+        lcd.print("Press # Delete");            
+    }  
+}
+
+void LCDdotting(int pos, int row){
+   for(int i=pos; i<=16-pos; i++){
+      lcd.setCursor(i, row);
+      lcd.print(".");
+      delay(100);
+   } 
+}
+
+void LCDcorrect(){
+    for(int i=3; i>=1; i--){
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Self-destruct in..");
+        lcd.setCursor(0, 1);
+        lcd.print(i);
+        LCDdotting(1, 1);         
+    }
+    delay(1500);
+    lcd.clear();
+    lcd.setCursor(3, 0);
+    lcd.print("Station 2");
+    lcd.setCursor(3, 1); 
+    lcd.print("Unlocked!");
+    delay(5000);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Proceed to Station 2");
+    lcd.setCursor(6, 1);
+    lcd.print("on your right!");
+    delay(2000);
+    for(int cursorPos = 0; cursorPos < 100; cursorPos++){
+        lcd.scrollDisplayLeft();
+        delay(300);
+    }  
+}
+
+void LCDwrong(){}
+
+//===LCD functions by James Low
