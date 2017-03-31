@@ -96,12 +96,20 @@ void keypadEvent(KeypadEvent key){
             if (keyword_in != keyword_set){
               Serial.println("Your Code is WRONG");
               Serial.println("Your timeout is 300 seconds");
-              LCDwrong();                      
-              break;
+              LCDwrong(); 
+              delay(3000);
+              lcd.clear();
+              zaehler = 0;
+              //keyword_in = [' ',' ',' ',' '];
+              LCDwelcomeScreen();
+              
+              break; // need to reset zaehler to 0
             }
           }
           else {
             Serial.println("You have to press more numbers");
+            LCDmoreNumbers();
+
           }
         }
         break;
@@ -133,8 +141,8 @@ void LCDwelcomeScreen(){
 void LCDpassword(){
     lcd.clear();                    
     for(int i=0; i<=zaehler; i++){  // for loop required for #Delete f(x)
-        lcd.setCursor(zaehler, 0);  
-        lcd.print(keyword_in[zaehler]);              
+        lcd.setCursor(0, 0);  
+        lcd.print(keyword_in);              
         lcd.setCursor(0, 1); 
         lcd.print("Press # Delete");            
     }  
@@ -176,6 +184,41 @@ void LCDcorrect(){
     }  
 }
 
-void LCDwrong(){}
+void LCDwrong(){
+    for(int i=3; i>=1; i--){
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Self-destruct in..");
+        lcd.setCursor(0, 1);
+        lcd.print(i);
+        LCDdotting(1, 1);         
+    }
+    delay(1500);
+    lcd.clear();
+    lcd.setCursor(3, 0);
+    lcd.print("ERROR");
+    lcd.setCursor(0, 1); 
+    lcd.print("Invalid PIN");
+    delay(5000);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("30 Sec. Penalty"); // Any button to restart try?
+    lcd.setCursor(6, 1);
+    lcd.print("Please Try Again");
+    delay(2000);
+    for(int cursorPos = 0; cursorPos < 10; cursorPos++){
+        lcd.scrollDisplayLeft();
+        delay(300);
+    }   
+}
+
+void LCDmoreNumbers(){
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Requires");
+    lcd.setCursor(0, 1);
+    lcd.print("More Digits!");
+    delay(2000);
+}
 
 //===LCD functions by James Low
