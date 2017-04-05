@@ -6,15 +6,21 @@
 #include <LiquidCrystal.h>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 int check = 1; //Variable um Keypad zu deaktivieren, 0 = aus
 int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
 =======
+=======
+>>>>>>> origin/jamesBranch
 #define _myArray_cnt 4
 
 unsigned int check = 1; //Variable um Keypad zu aktivieren, 0 = aus
 unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
 unsigned int check_3 = 0; //Variable um Station 3 zu aktivieren, 0 = aus
 unsigned int check_4 = 0; //Variable um Station 4 zu aktivieren, 0 = aus
+<<<<<<< HEAD
+>>>>>>> origin/jamesBranch
+=======
 >>>>>>> origin/jamesBranch
 
 byte ledPin = 13;
