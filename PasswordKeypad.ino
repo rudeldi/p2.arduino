@@ -7,8 +7,10 @@
 
 #define _myArray_cnt 4
 
-int check = 1; //Variable um Keypad zu deaktivieren, 0 = aus
-int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
+unsigned int check = 1; //Variable um Keypad zu aktivieren, 0 = aus
+unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
+unsigned int check_3 = 0; //Variable um Station 3 zu aktivieren, 0 = aus
+unsigned int check_4 = 0; //Variable um Station 4 zu aktivieren, 0 = aus
 
 byte ledPin = 13;
 
@@ -162,6 +164,8 @@ void keypadEvent(KeypadEvent key) {
         else {
           Serial.println("You have to press more numbers");
           LCDmoreNumbers();
+          LCDpassword();
+          break;
 
         }
       }
@@ -198,7 +202,7 @@ void LCDpassword() {
     lcd.setCursor(0, 0);
     lcd.print(keyword_in);
     lcd.setCursor(0, 1);
-    lcd.print("Press # Delete");
+    lcd.print("Press * Confirm");
   }
 }
 
