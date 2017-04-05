@@ -5,6 +5,8 @@
 #include <Keypad.h>
 #include <LiquidCrystal.h>
 
+#define _myArray_cnt 4
+
 int check = 1; //Variable um Keypad zu deaktivieren, 0 = aus
 int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
 
@@ -26,8 +28,8 @@ char keys[ROWS][COLS] = {
   {'*', '0', '#'}
 };
 
-char keyword_in[4];
-char keyword_set[] = {'2', '3', '5', '6'};
+char keyword_in[_myArray_cnt];
+char keyword_set[_myArray_cnt] = {'2', '3', '5', '6'};
 
 int zaehler = 0;
 
@@ -142,8 +144,7 @@ void keypadEvent(KeypadEvent key) {
               keyword_in[2] == keyword_set[2] and keyword_in[3] == keyword_set[3]) {
             Serial.println("You got the right Code");
             LCDcorrect();
-            zaehler = 0;
-            keyword_in[4];
+            resetKeypad();
             break;
           }
           if (keyword_in != keyword_set) {
@@ -152,8 +153,7 @@ void keypadEvent(KeypadEvent key) {
             LCDwrong();
             delay(3000);
             lcd.clear();
-            zaehler = 0;
-            //keyword_in = [' ',' ',' ',' '];
+            resetKeypad();
             LCDwelcomeScreen();
 
             break; // need to reset zaehler to 0
@@ -281,7 +281,7 @@ void keyPadcode() {
 
   if (key) {
 
-    if (zaehler <= 3) {
+    if (zaehler <= 3 and key != '*') {
       keyword_in[zaehler] = key;
       LCDpassword();
       zaehler += 1;
@@ -298,6 +298,13 @@ void keyPadcode() {
       lcd.print("Press * Confirm");            // Visual cue
     }
   }
+}
+
+void resetKeypad(){
+  for(unsigned int i = 0; i < _myArray_cnt; i++){
+    keyword_in[i] = "";
+  }
+  zaehler = 0;
 }
 
 void stangenSpiel() {
