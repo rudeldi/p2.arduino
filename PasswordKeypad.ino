@@ -182,7 +182,8 @@ void keypadEvent(KeypadEvent key) {
   }
 }
 
-//===LCD functions by James Low
+  //-------------------------- keypad.lcd ---------------------------------
+  
 void LCDwelcomeScreen() {
   lcd.clear();
   lcd.setCursor(0, 0);          // (pos, row) starting with 0
@@ -237,44 +238,40 @@ void LCDcorrect() {
   }
 }
 
-void LCDwrong() {
-  for (int i = 3; i >= 1; i--) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Self-destruct in..");
-    lcd.setCursor(0, 1);
-    lcd.print(i);
-    LCDdotting(1, 1);
+void LCDwrong(){
+  for(int i=3; i>=1; i--){
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Self-destruct in..");
+      lcd.setCursor(0, 1);
+      lcd.print(i);
+      LCDdotting(1, 1);         
   }
-  delay(1500);
+  //delay(1500);
   lcd.clear();
-  lcd.setCursor(3, 0);
+  lcd.setCursor(5, 0);
   lcd.print("ERROR");
-  lcd.setCursor(0, 1);
-  lcd.print("Invalid PIN");
-  delay(5000);
+  lcd.setCursor(2, 1); 
+  lcd.print("PIN Invalid!");
+  delay(3000);
   lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("30 Sec. Penalty"); // Any button to restart try?
-  lcd.setCursor(6, 1);
-  lcd.print("Please Try Again");
-  delay(2000);
-  for (int cursorPos = 0; cursorPos < 10; cursorPos++) {
-    lcd.scrollDisplayLeft();
-    delay(300);
-  }
+  lcd.setCursor(4, 0);
+  lcd.print("Penalty");
+  lcd.setCursor(2, 1);
+  lcd.print("-30 Seconds");
+  delay(3000);
 }
 
-void LCDmoreNumbers() {
+void LCDmoreNumbers(){
   lcd.clear();
-  lcd.setCursor(0, 0);
+  lcd.setCursor(4, 0);
   lcd.print("Requires");
-  lcd.setCursor(0, 1);
+  lcd.setCursor(2, 1);
   lcd.print("More Digits!");
   delay(2000);
 }
 
-//===LCD functions by James Low
+  //-------------------------- keypad.lcd ---------------------------------
 
 void keyPadcode() {
   char key = keypad.getKey();
