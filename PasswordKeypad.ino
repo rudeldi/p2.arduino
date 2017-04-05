@@ -164,6 +164,7 @@ void keypadEvent(KeypadEvent key) {
         else {
           Serial.println("You have to press more numbers");
           LCDmoreNumbers();
+          LCDpassword();
           break;
 
         }
@@ -201,7 +202,7 @@ void LCDpassword() {
     lcd.setCursor(0, 0);
     lcd.print(keyword_in);
     lcd.setCursor(0, 1);
-    lcd.print("Press # Delete");
+    lcd.print("Press * Confirm");
   }
 }
 
