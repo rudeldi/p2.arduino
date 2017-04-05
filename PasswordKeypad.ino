@@ -131,6 +131,7 @@ void LCDpassword() {
       Serial.println(keyword_in[i]);
     }
   }
+  
   else {
     for ( unsigned i = 0; i <= zaehler - 1; i++) {
       lcd.setCursor(i, 0);
