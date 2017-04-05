@@ -1,6 +1,7 @@
 /*
-    V0.1 12.3.2017 Keypad
-    V0.2 1.4.2017  Stangenspiel
+    V0.1    12.3.2017 Keypad
+    V0.2    1.4.2017  Stangenspiel
+    V0.2.1  5.4.2017  Keypad fixed
 */
 #include <Keypad.h>
 #include <LiquidCrystal.h>
@@ -30,7 +31,7 @@ char keys[ROWS][COLS] = {
   {'*', '0', '#'}
 };
 
-char keyword_in[_myArray_cnt];
+char keyword_in[_myArray_cnt] = {' ', ' ', ' ', ' '};;
 char keyword_set[_myArray_cnt] = {'2', '3', '5', '6'};
 
 int zaehler = 0;
@@ -122,10 +123,6 @@ void loop() {
     stangenSpiel();
   }
 
-  if (blink) {
-    digitalWrite(ledPin, !digitalRead(ledPin));   // Change the ledPin from Hi2Lo or Lo2Hi.
-    delay(100);
-  }
 }
 
 // Taking care of some special events.
@@ -133,11 +130,10 @@ void keypadEvent(KeypadEvent key) {
   switch (keypad.getState()) {
     case PRESSED:
       if (key == '#') {
-        digitalWrite(ledPin, !digitalRead(ledPin));
-        ledPin_state = digitalRead(ledPin);        // Remember LED state, lit or unlit.
-        if (zaehler >= 1) {
-          keyword_in[zaehler] = 'X';
+        if (zaehler > 0) {
           zaehler -= 1;
+          keyword_in[zaehler] = ' ';
+          LCDpassword();
         }
       }
       if (key == '*') {
@@ -164,6 +160,7 @@ void keypadEvent(KeypadEvent key) {
         else {
           Serial.println("You have to press more numbers");
           LCDmoreNumbers();
+          LCDpassword();
           break;
 
         }
@@ -172,14 +169,11 @@ void keypadEvent(KeypadEvent key) {
 
     case RELEASED:
       if (key == '*') {
-        digitalWrite(ledPin, ledPin_state);   // Restore LED state from before it started blinking.
-        blink = false;
       }
       break;
 
     case HOLD:
       if (key == '*') {
-        blink = true;    // Blink the LED when holding the * key.
       }
       break;
   }
@@ -197,12 +191,19 @@ void LCDwelcomeScreen() {
 
 void LCDpassword() {
   lcd.clear();
-  for (int i = 0; i <= zaehler; i++) { // for loop required for #Delete f(x)
-    lcd.setCursor(0, 0);
-    lcd.print(keyword_in);
-    lcd.setCursor(0, 1);
-    lcd.print("Press # Delete");
+
+  for ( unsigned i = 0; i < _myArray_cnt; i++) {
+    lcd.setCursor(i, 0);
+    lcd.print(keyword_in[i]);
+    Serial.print("LCDPW on pos ");
+    Serial.print(i);
+    Serial.print(" = ");
+    Serial.println(keyword_in[i]);
   }
+  Serial.print("LCDPW ");
+  Serial.println(keyword_in);
+  lcd.setCursor(0, 1);
+  lcd.print("Press # Delete");
 }
 
 void LCDdotting(int pos, int row) {
@@ -281,7 +282,7 @@ void keyPadcode() {
 
   if (key) {
 
-    if (zaehler <= 3 and key != '*') {
+    if (zaehler <= 3 and key != '*' and key != '#') {
       keyword_in[zaehler] = key;
       LCDpassword();
       zaehler += 1;
@@ -290,8 +291,10 @@ void keyPadcode() {
     Serial.println(key);
     Serial.println(keyword_set);
     Serial.println(keyword_in);
+    Serial.println(zaehler);
 
     if (zaehler == 4) {
+      LCDpassword();
       Serial.println("Press * for check password");
       Serial.println("Press # for delete last number");
       lcd.setCursor(0, 1);
@@ -302,7 +305,7 @@ void keyPadcode() {
 
 void resetKeypad() {
   for (unsigned int i = 0; i < _myArray_cnt; i++) {
-    keyword_in[i] = "";
+    keyword_in[i] = ' ';
   }
   zaehler = 0;
   Serial.println(keyword_in);
