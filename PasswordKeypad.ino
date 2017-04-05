@@ -1,6 +1,7 @@
 /*
-    V0.1 12.3.2017 Keypad
-    V0.2 1.4.2017  Stangenspiel
+    V0.1    12.3.2017 Keypad
+    V0.2    1.4.2017  Stangenspiel
+    V0.2.1  5.4.2017  Keypad fixed
 */
 #include <Keypad.h>
 #include <LiquidCrystal.h>
@@ -30,7 +31,7 @@ char keys[ROWS][COLS] = {
   {'*', '0', '#'}
 };
 
-char keyword_in[_myArray_cnt];
+char keyword_in[_myArray_cnt] = {' ', ' ', ' ', ' '};;
 char keyword_set[_myArray_cnt] = {'2', '3', '5', '6'};
 
 int zaehler = 0;
@@ -108,6 +109,76 @@ void setup() {
   //-------------------------------------------------------------------------------------------
 }
 
+void loop() {
+
+  //-------------------------- Keypad ---------------------------------
+
+  if (check) {
+    keyPadcode();
+  }
+
+  //-------------------------- Stangenspiel ---------------------------------
+
+  if (check_2) {
+    stangenSpiel();
+  }
+
+}
+
+// Taking care of some special events.
+void keypadEvent(KeypadEvent key) {
+  switch (keypad.getState()) {
+    case PRESSED:
+      if (key == '#') {
+        if (zaehler > 0) {
+          zaehler -= 1;
+          keyword_in[zaehler] = ' ';
+          LCDpassword();
+        }
+      }
+      if (key == '*') {
+        if (zaehler == 4) {
+          if (keyword_in[0] == keyword_set[0] and keyword_in[1] == keyword_set[1] and
+              keyword_in[2] == keyword_set[2] and keyword_in[3] == keyword_set[3]) {
+            Serial.println("You got the right Code");
+            LCDcorrect();
+            resetKeypad();
+            break;
+          }
+          if (keyword_in != keyword_set) {
+            Serial.println("Your Code is WRONG");
+            Serial.println("Your timeout is 300 seconds");
+            LCDwrong();
+            delay(3000);
+            lcd.clear();
+            resetKeypad();
+            LCDwelcomeScreen();
+
+            break; // need to reset zaehler to 0
+          }
+        }
+        else {
+          Serial.println("You have to press more numbers");
+          LCDmoreNumbers();
+          LCDpassword();
+          break;
+
+        }
+      }
+      break;
+
+    case RELEASED:
+      if (key == '*') {
+      }
+      break;
+
+    case HOLD:
+      if (key == '*') {
+      }
+      break;
+  }
+}
+
 //-------------------------- keypad.lcd ---------------------------------
 
 void LCDwelcomeScreen() {
@@ -121,32 +192,18 @@ void LCDwelcomeScreen() {
 void LCDpassword() {
   lcd.clear();
 
-  if (zaehler <= 3) {
-    for ( unsigned i = 0; i <= zaehler; i++) {
-      lcd.setCursor(i, 0);
-      lcd.print(keyword_in[i]);
-      Serial.print("LCDPW on pos ");
-      Serial.print(i);
-      Serial.print(" = ");
-      Serial.println(keyword_in[i]);
-    }
+  for ( unsigned i = 0; i < _myArray_cnt; i++) {
+    lcd.setCursor(i, 0);
+    lcd.print(keyword_in[i]);
+    Serial.print("LCDPW on pos ");
+    Serial.print(i);
+    Serial.print(" = ");
+    Serial.println(keyword_in[i]);
   }
-  
-  else {
-    for ( unsigned i = 0; i <= zaehler - 1; i++) {
-      lcd.setCursor(i, 0);
-      lcd.print(keyword_in[i]);
-      Serial.print("LCDPW on pos ");
-      Serial.print(i);
-      Serial.print(" = ");
-      Serial.println(keyword_in[i]);
-    }
-  }
-}
-Serial.print("LCDPW ");
-Serial.println(keyword_in);
-lcd.setCursor(0, 1);
-lcd.print("Press # Delete");
+  Serial.print("LCDPW ");
+  Serial.println(keyword_in);
+  lcd.setCursor(0, 1);
+  lcd.print("Press # Delete");
 }
 
 void LCDdotting(int pos, int row) {
@@ -220,68 +277,12 @@ void LCDmoreNumbers() {
 
 //-------------------------- keypad.lcd ---------------------------------
 
-
-// Taking care of some special events.
-void keypadEvent(KeypadEvent key) {
-  switch (keypad.getState()) {
-    case PRESSED:
-      if (key == '#') {
-        digitalWrite(ledPin, !digitalRead(ledPin));
-        ledPin_state = digitalRead(ledPin);        // Remember LED state, lit or unlit.
-        if (zaehler >= 1) {
-          keyword_in[zaehler] = 'X';
-          zaehler -= 1;
-        }
-      }
-      if (key == '*') {
-        if (zaehler == 4) {
-          if (keyword_in[0] == keyword_set[0] and keyword_in[1] == keyword_set[1] and
-              keyword_in[2] == keyword_set[2] and keyword_in[3] == keyword_set[3]) {
-            Serial.println("You got the right Code");
-            LCDcorrect();
-            resetKeypad();
-            break;
-          }
-          if (keyword_in != keyword_set) {
-            Serial.println("Your Code is WRONG");
-            Serial.println("Your timeout is 300 seconds");
-            LCDwrong();
-            delay(3000);
-            lcd.clear();
-            resetKeypad();
-            LCDwelcomeScreen();
-
-            break; // need to reset zaehler to 0
-          }
-        }
-        else {
-          Serial.println("You have to press more numbers");
-          LCDmoreNumbers();
-          LCDpassword();
-          break;
-
-        }
-      }
-      break;
-
-    case RELEASED:
-      if (key == '*') {
-      }
-      break;
-
-    case HOLD:
-      if (key == '*') {
-      }
-      break;
-  }
-}
-
 void keyPadcode() {
   char key = keypad.getKey();
 
   if (key) {
 
-    if (zaehler <= 3 and key != '*') {
+    if (zaehler <= 3 and key != '*' and key != '#') {
       keyword_in[zaehler] = key;
       LCDpassword();
       zaehler += 1;
@@ -605,21 +606,4 @@ void nothingPressed() {
 void countDown() {
 
 }
-
-void loop() {
-
-  //-------------------------- Keypad ---------------------------------
-
-  if (check) {
-    keyPadcode();
-  }
-
-  //-------------------------- Stangenspiel ---------------------------------
-
-  if (check_2) {
-    stangenSpiel();
-  }
-
-}
-
 
