@@ -5,8 +5,6 @@
 #include <Keypad.h>
 #include <LiquidCrystal.h>
 
-#define _myArray_cnt 4
-
 int check = 1; //Variable um Keypad zu deaktivieren, 0 = aus
 int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
 
@@ -28,8 +26,8 @@ char keys[ROWS][COLS] = {
   {'*', '0', '#'}
 };
 
-char keyword_in[_myArray_cnt];
-char keyword_set[_myArray_cnt] = {'2', '3', '5', '6'};
+char keyword_in[4];
+char keyword_set[] = {'2', '3', '5', '6'};
 
 int zaehler = 0;
 
@@ -144,7 +142,8 @@ void keypadEvent(KeypadEvent key) {
               keyword_in[2] == keyword_set[2] and keyword_in[3] == keyword_set[3]) {
             Serial.println("You got the right Code");
             LCDcorrect();
-            resetKeypad();
+            zaehler = 0;
+            keyword_in[4];
             break;
           }
           if (keyword_in != keyword_set) {
@@ -153,7 +152,8 @@ void keypadEvent(KeypadEvent key) {
             LCDwrong();
             delay(3000);
             lcd.clear();
-            resetKeypad();
+            zaehler = 0;
+            //keyword_in = [' ',' ',' ',' '];
             LCDwelcomeScreen();
 
             break; // need to reset zaehler to 0
@@ -182,8 +182,8 @@ void keypadEvent(KeypadEvent key) {
   }
 }
 
-//-------------------------- keypad.lcd ---------------------------------
-
+  //-------------------------- keypad.lcd ---------------------------------
+  
 void LCDwelcomeScreen() {
   lcd.clear();
   lcd.setCursor(0, 0);          // (pos, row) starting with 0
@@ -238,20 +238,20 @@ void LCDcorrect() {
   }
 }
 
-void LCDwrong() {
-  for (int i = 3; i >= 1; i--) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Self-destruct in..");
-    lcd.setCursor(0, 1);
-    lcd.print(i);
-    LCDdotting(1, 1);
+void LCDwrong(){
+  for(int i=3; i>=1; i--){
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Self-destruct in..");
+      lcd.setCursor(0, 1);
+      lcd.print(i);
+      LCDdotting(1, 1);         
   }
   //delay(1500);
   lcd.clear();
   lcd.setCursor(5, 0);
   lcd.print("ERROR");
-  lcd.setCursor(2, 1);
+  lcd.setCursor(2, 1); 
   lcd.print("PIN Invalid!");
   delay(3000);
   lcd.clear();
@@ -262,23 +262,23 @@ void LCDwrong() {
   delay(3000);
 }
 
-void LCDmoreNumbers() {
-  lcd.clear();
-  lcd.setCursor(4, 0);
-  lcd.print("Requires");
-  lcd.setCursor(2, 1);
-  lcd.print("More Digits!");
-  delay(2000);
+void LCDmoreNumbers(){
+    lcd.clear();
+    lcd.setCursor(4, 0);
+    lcd.print("Requires");
+    lcd.setCursor(2, 1);
+    lcd.print("More Digits!");
+    delay(2000);
 }
 
-//-------------------------- keypad.lcd ---------------------------------
+  //-------------------------- keypad.lcd ---------------------------------
 
 void keyPadcode() {
   char key = keypad.getKey();
 
   if (key) {
 
-    if (zaehler <= 3 and key != '*') {
+    if (zaehler <= 3) {
       keyword_in[zaehler] = key;
       LCDpassword();
       zaehler += 1;
@@ -297,14 +297,6 @@ void keyPadcode() {
   }
 }
 
-void resetKeypad() {
-  for (unsigned int i = 0; i < _myArray_cnt; i++) {
-    keyword_in[i] = "";
-  }
-  zaehler = 0;
-  Serial.println(keyword_in);
-}
-
 void stangenSpiel() {
   //Zielabfolge: 3 - 1 -2 - 4 - 2
 
@@ -317,7 +309,14 @@ void stangenSpiel() {
   if (buttonStateStart == 1018) //Startbutton einbauen
   {
 
-    nothingPressed();
+    digitalWrite (red1, LOW);
+    digitalWrite (green1, LOW);
+    digitalWrite (red2, LOW);
+    digitalWrite (green2, LOW);
+    digitalWrite (red3, LOW);
+    digitalWrite (green3, LOW);
+    digitalWrite (red4, LOW);
+    digitalWrite (green4, LOW);
 
     digitalWrite (red3, HIGH);
     digitalWrite (green3, HIGH);
@@ -356,7 +355,14 @@ void stangenSpiel() {
 
     delay(1500);
 
-    nothingPressed();
+    digitalWrite (red1, LOW);
+    digitalWrite (green1, LOW);
+    digitalWrite (red2, LOW);
+    digitalWrite (green2, LOW);
+    digitalWrite (red3, LOW);
+    digitalWrite (green3, LOW);
+    digitalWrite (red4, LOW);
+    digitalWrite (green4, LOW);
 
     buttonStateStart = 0;
   }
@@ -364,7 +370,14 @@ void stangenSpiel() {
 
   else if (buttonStateStart == 0)
   {
-    nothingPressed();
+    digitalWrite (red1, LOW);
+    digitalWrite (green1, LOW);
+    digitalWrite (red2, LOW);
+    digitalWrite (green2, LOW);
+    digitalWrite (red3, LOW);
+    digitalWrite (green3, LOW);
+    digitalWrite (red4, LOW);
+    digitalWrite (green4, LOW);
 
     buttonState1 = digitalRead(buttonPin1);
     buttonState2 = digitalRead(buttonPin2);
@@ -404,9 +417,16 @@ void stangenSpiel() {
     for (int i; i < 10; i++)
     {
       Serial.println("falsch - erstes Kriterium!");
-
-      falseSequencing();
-
+      digitalWrite (red1, HIGH);
+      digitalWrite (red2, HIGH);
+      digitalWrite (red3, HIGH);
+      digitalWrite (red4, HIGH);
+      delay(100);
+      digitalWrite (red1, LOW);
+      digitalWrite (red2, LOW);
+      digitalWrite (red3, LOW);
+      digitalWrite (red4, LOW);
+      delay(100);
     }
     a = 0;
   }
@@ -415,7 +435,15 @@ void stangenSpiel() {
 
   else                              //erstes Kriterium: nichts gedrÃ¼ckt
   {
-    nothingPressed();
+    digitalWrite (green1, LOW);
+    digitalWrite (green2, LOW);
+    digitalWrite (green3, LOW);
+    digitalWrite (green4, LOW);
+
+    digitalWrite (red1, LOW);
+    digitalWrite (red2, LOW);
+    digitalWrite (red3, LOW);
+    digitalWrite (red4, LOW);
   }
 
   //--------------------------------------------------------------
@@ -438,15 +466,31 @@ void stangenSpiel() {
     {
       Serial.println("falsch - zweites Kriterium!");
 
-      falseSequencing();
-
+      digitalWrite (red1, HIGH);
+      digitalWrite (red2, HIGH);
+      digitalWrite (red3, HIGH);
+      digitalWrite (red4, HIGH);
+      delay(100);
+      digitalWrite (red1, LOW);
+      digitalWrite (red2, LOW);
+      digitalWrite (red3, LOW);
+      digitalWrite (red4, LOW);
+      delay(100);
     }
     a = 0;
   }
 
   else                              //zweites Kriterium: nichts gedrÃ¼ckt
   {
-    nothingPressed();
+    digitalWrite (green1, LOW);
+    digitalWrite (green2, LOW);
+    digitalWrite (green3, LOW);
+    digitalWrite (green4, LOW);
+
+    digitalWrite (red1, LOW);
+    digitalWrite (red2, LOW);
+    digitalWrite (red3, LOW);
+    digitalWrite (red4, LOW);
   }
 
 
@@ -470,15 +514,31 @@ void stangenSpiel() {
     {
       Serial.println("falsch - drittes Kriterium!");
 
-      falseSequencing();
-
+      digitalWrite (red1, HIGH);
+      digitalWrite (red2, HIGH);
+      digitalWrite (red3, HIGH);
+      digitalWrite (red4, HIGH);
+      delay(100);
+      digitalWrite (red1, LOW);
+      digitalWrite (red2, LOW);
+      digitalWrite (red3, LOW);
+      digitalWrite (red4, LOW);
+      delay(100);
     }
     a = 0;
   }
 
   else                              //drittes Kriterium: nichts gedrÃ¼ckt
   {
-    nothingPressed();
+    digitalWrite (green1, LOW);
+    digitalWrite (green2, LOW);
+    digitalWrite (green3, LOW);
+    digitalWrite (green4, LOW);
+
+    digitalWrite (red1, LOW);
+    digitalWrite (red2, LOW);
+    digitalWrite (red3, LOW);
+    digitalWrite (red4, LOW);
   }
 
   //--------------------------------------------------------------
@@ -501,15 +561,31 @@ void stangenSpiel() {
     {
       Serial.println("falsch - viertes Kriterium!");
 
-      falseSequencing();
-
+      digitalWrite (red1, HIGH);
+      digitalWrite (red2, HIGH);
+      digitalWrite (red3, HIGH);
+      digitalWrite (red4, HIGH);
+      delay(100);
+      digitalWrite (red1, LOW);
+      digitalWrite (red2, LOW);
+      digitalWrite (red3, LOW);
+      digitalWrite (red4, LOW);
+      delay(100);
     }
     a = 0;
   }
 
   else                              //viertes Kriterium: nichts gedrÃ¼ckt
   {
-    nothingPressed();
+    digitalWrite (green1, LOW);
+    digitalWrite (green2, LOW);
+    digitalWrite (green3, LOW);
+    digitalWrite (green4, LOW);
+
+    digitalWrite (red1, LOW);
+    digitalWrite (red2, LOW);
+    digitalWrite (red3, LOW);
+    digitalWrite (red4, LOW);
   }
 
   //--------------------------------------------------------------
@@ -532,15 +608,31 @@ void stangenSpiel() {
     {
       Serial.println("falsch - fÃ¼nftes Kriterium!");
 
-      falseSequencing();
-
+      digitalWrite (red1, HIGH);
+      digitalWrite (red2, HIGH);
+      digitalWrite (red3, HIGH);
+      digitalWrite (red4, HIGH);
+      delay(100);
+      digitalWrite (red1, LOW);
+      digitalWrite (red2, LOW);
+      digitalWrite (red3, LOW);
+      digitalWrite (red4, LOW);
+      delay(100);
     }
     a = 0;
   }
 
   else                              //fÃ¼nftes Kriterium: nichts gedrÃ¼ckt
   {
-    nothingPressed();
+    digitalWrite (green1, LOW);
+    digitalWrite (green2, LOW);
+    digitalWrite (green3, LOW);
+    digitalWrite (green4, LOW);
+
+    digitalWrite (red1, LOW);
+    digitalWrite (red2, LOW);
+    digitalWrite (red3, LOW);
+    digitalWrite (red4, LOW);
   }
 
   //--------------------------------------------------------------
@@ -569,35 +661,7 @@ void stangenSpiel() {
 
 }
 
-void falseSequencing() {
-
-  digitalWrite (red1, HIGH);
-  digitalWrite (red2, HIGH);
-  digitalWrite (red3, HIGH);
-  digitalWrite (red4, HIGH);
-  delay(100);
-  digitalWrite (red1, LOW);
-  digitalWrite (red2, LOW);
-  digitalWrite (red3, LOW);
-  digitalWrite (red4, LOW);
-  delay(100);
-
-}
-
-void nothingPressed() {
-
-  digitalWrite (green1, LOW);
-  digitalWrite (green2, LOW);
-  digitalWrite (green3, LOW);
-  digitalWrite (green4, LOW);
-
-  digitalWrite (red1, LOW);
-  digitalWrite (red2, LOW);
-  digitalWrite (red3, LOW);
-  digitalWrite (red4, LOW);
-}
-
-void countDown() {
-
+void countDown(){
+  
 }
 
