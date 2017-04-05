@@ -203,7 +203,7 @@ void LCDpassword() {
   Serial.print("LCDPW ");
   Serial.println(keyword_in);
   lcd.setCursor(0, 1);
-  lcd.print("Press # Delete");
+  lcd.print("#Delete *Confirm");
 }
 
 void LCDdotting(int pos, int row) {
