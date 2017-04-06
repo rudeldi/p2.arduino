@@ -8,10 +8,11 @@
 
 #define _myArray_cnt 4
 
-unsigned int check = 1; //Variable um Keypad zu aktivieren, 0 = aus
+unsigned int check_1 = 1; //Variable um Keypad zu aktivieren, 0 = aus
 unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
 unsigned int check_3 = 0; //Variable um Station 3 zu aktivieren, 0 = aus
 unsigned int check_4 = 0; //Variable um Station 4 zu aktivieren, 0 = aus
+unsigned int check_5 = 0; //Variable um die Bombe zu öffnen, 0 = zu
 
 byte ledPin = 13;
 
@@ -20,7 +21,7 @@ boolean ledPin_state;
 
 LiquidCrystal lcd(14, 13, 12, 11, 10, 9); // Creates lcd object
 
-//-------------------- Keypad -----------------------------------------------------
+  //---------------------Keypad-----------------------------------
 
 const byte ROWS = 4; //four rows
 const byte COLS = 3; //three columns
@@ -40,9 +41,8 @@ byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
 
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
-//-------------------------------------------------------------------------------------------
 
-//-------------------- Stangenspiel -----------------------------------------------------
+  //--------------------Stangenspiel------------------------------
 
 int Startbutton = 0;
 int buttonStateStart;
@@ -68,10 +68,8 @@ int buttonPin3 = 25;
 int buttonPin4 = 26;
 
 int a = 1;  // Variable, die sich erhöht, wenn Spieler eine Kombination im Spiel richtig hat
+  //--------------------------------------------------------------
 
-//-------------------- Countdown -----------------------------------------------------
-
-//-------------------------------------------------------------------------------------------
 
 void setup() {
   Serial.begin(9600);
@@ -82,12 +80,12 @@ void setup() {
   lcd.begin(16, 2);                     // Activates 16 x 2 lcd
   LCDwelcomeScreen();
 
-  //------------------------- Keypad -----------------------------------------------------
+  //---------------------Keypad-----------------------------------
 
   keypad.addEventListener(keypadEvent); // Add an event listener for this keypad
 
 
-  //-------------------------- Stangenspiel---------------------------------------------
+  //--------------------Stangenspiel------------------------------
 
   pinMode(red1, OUTPUT);
   pinMode(red2, OUTPUT);
@@ -106,23 +104,30 @@ void setup() {
 
   pinMode(Startbutton, INPUT);
 
-  //-------------------------------------------------------------------------------------------
+  //--------------------------------------------------------------
 }
 
 void loop() {
 
-  //-------------------------- Keypad ---------------------------------
-
-  if (check) {
+  if (check_1) {
     keyPadcode();
   }
-
-  //-------------------------- Stangenspiel ---------------------------------
 
   if (check_2) {
     stangenSpiel();
   }
 
+  if (check_3) {
+    raetselSpiel();
+  }
+
+  if (check_4) {
+    colourCards();
+  }
+
+  if (check_5) {
+    openBomb();
+  }
 }
 
 // Taking care of some special events.
@@ -143,6 +148,8 @@ void keypadEvent(KeypadEvent key) {
             Serial.println("You got the right Code");
             LCDcorrect();
             resetKeypad();
+            check_1 = 0;
+            check_2 = 1;
             break;
           }
           if (keyword_in != keyword_set) {
@@ -179,14 +186,14 @@ void keypadEvent(KeypadEvent key) {
   }
 }
 
-//-------------------------- keypad.lcd ---------------------------------
+  //--------------------Keypad LCD--------------------------------
 
 void LCDwelcomeScreen() {
   lcd.clear();
   lcd.setCursor(0, 0);          // (pos, row) starting with 0
   lcd.print("Enter Serial Nr:");
   lcd.setCursor(2, 1);
-  lcd.print("===MCTUBS===");
+  lcd.print("===MCBS===");
 }
 
 void LCDpassword() {
@@ -203,7 +210,7 @@ void LCDpassword() {
   Serial.print("LCDPW ");
   Serial.println(keyword_in);
   lcd.setCursor(0, 1);
-  lcd.print("Press # Delete");
+  lcd.print("#Delete *Confirm");
 }
 
 void LCDdotting(int pos, int row) {
@@ -275,7 +282,7 @@ void LCDmoreNumbers() {
   delay(2000);
 }
 
-//-------------------------- keypad.lcd ---------------------------------
+  //--------------------Keypad LCD--------------------------------
 
 void keyPadcode() {
   char key = keypad.getKey();
@@ -549,7 +556,6 @@ void stangenSpiel() {
     nothingPressed();
   }
 
-  //--------------------------------------------------------------
   if (a == 5)
   {
 
@@ -603,7 +609,37 @@ void nothingPressed() {
   digitalWrite (red4, LOW);
 }
 
+  //--------------------------------------------------------------
+
+  //--------------------Rätselspiel-------------------------------
+
+void raetselSpiel(){
+  
+}
+
+  //--------------------------------------------------------------
+
+  //--------------------ColourCards-------------------------------
+
+void colourCards(){
+  
+}
+
+  //--------------------------------------------------------------
+
+  //--------------------Countdown---------------------------------
+
 void countDown() {
 
 }
+
+  //--------------------------------------------------------------
+
+  //--------------------ÖffneBombe--------------------------------
+
+void openBomb() {
+  
+}
+
+  //--------------------------------------------------------------
 
