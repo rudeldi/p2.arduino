@@ -6,7 +6,7 @@
 #include <Keypad.h>
 #include <LiquidCrystal.h>
 
-#define _myArray_cnt 4
+#define _myArray_cnt 8
 
 unsigned int check_1 = 1; //Variable um Keypad zu aktivieren, 0 = aus
 unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
@@ -14,17 +14,13 @@ unsigned int check_3 = 0; //Variable um Station 3 zu aktivieren, 0 = aus
 unsigned int check_4 = 0; //Variable um Station 4 zu aktivieren, 0 = aus
 unsigned int check_5 = 0; //Variable um die Bombe zu öffnen, 0 = zu
 
-byte ledPin = 13;
-
-boolean blink = false;
-boolean ledPin_state;
-
 LiquidCrystal lcd(14, 13, 12, 11, 10, 9); // Creates lcd object
 
   //---------------------Keypad-----------------------------------
 
 const byte ROWS = 4; //four rows
 const byte COLS = 3; //three columns
+
 char keys[ROWS][COLS] = {
   {'1', '2', '3'},
   {'4', '5', '6'},
@@ -32,8 +28,8 @@ char keys[ROWS][COLS] = {
   {'*', '0', '#'}
 };
 
-char keyword_in[_myArray_cnt] = {' ', ' ', ' ', ' '};;
-char keyword_set[_myArray_cnt] = {'2', '3', '5', '6'};
+char keyword_in[_myArray_cnt] = {' ', ' ', ' ', ' ',' ', ' ', ' ', ' '};
+char keyword_set[_myArray_cnt] = {'0', '6', '0', '4', '2', '0', '1', '7'};
 
 int zaehler = 0;
 
@@ -73,9 +69,6 @@ int a = 1;  // Variable, die sich erhöht, wenn Spieler eine Kombination im Spie
 
 void setup() {
   Serial.begin(9600);
-  pinMode(ledPin, OUTPUT);              // Sets the digital pin as output.
-  digitalWrite(ledPin, HIGH);           // Turn the LED on.
-  ledPin_state = digitalRead(ledPin);   // Store initial LED state. HIGH when LED is on.
 
   lcd.begin(16, 2);                     // Activates 16 x 2 lcd
   LCDwelcomeScreen();
@@ -142,9 +135,12 @@ void keypadEvent(KeypadEvent key) {
         }
       }
       if (key == '*') {
-        if (zaehler == 4) {
+        if (zaehler == _myArray_cnt) {
           if (keyword_in[0] == keyword_set[0] and keyword_in[1] == keyword_set[1] and
-              keyword_in[2] == keyword_set[2] and keyword_in[3] == keyword_set[3]) {
+              keyword_in[2] == keyword_set[2] and keyword_in[3] == keyword_set[3] and
+              keyword_in[4] == keyword_set[4] and keyword_in[5] == keyword_set[5] and
+              keyword_in[6] == keyword_set[6] and keyword_in[7] == keyword_set[7]) {
+
             Serial.println("You got the right Code");
             LCDcorrect();
             resetKeypad();
@@ -289,7 +285,7 @@ void keyPadcode() {
 
   if (key) {
 
-    if (zaehler <= 3 and key != '*' and key != '#') {
+    if (zaehler <= (_myArray_cnt - 1) and key != '*' and key != '#') {
       keyword_in[zaehler] = key;
       LCDpassword();
       zaehler += 1;
@@ -300,7 +296,7 @@ void keyPadcode() {
     Serial.println(keyword_in);
     Serial.println(zaehler);
 
-    if (zaehler == 4) {
+    if (zaehler == _myArray_cnt) {
       LCDpassword();
       Serial.println("Press * for check password");
       Serial.println("Press # for delete last number");
