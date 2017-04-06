@@ -6,24 +6,21 @@
 #include <Keypad.h>
 #include <LiquidCrystal.h>
 
-#define _myArray_cnt 4
+#define _myArray_cnt 8
 
-unsigned int check = 1; //Variable um Keypad zu aktivieren, 0 = aus
+unsigned int check_1 = 1; //Variable um Keypad zu aktivieren, 0 = aus
 unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
 unsigned int check_3 = 0; //Variable um Station 3 zu aktivieren, 0 = aus
 unsigned int check_4 = 0; //Variable um Station 4 zu aktivieren, 0 = aus
-
-byte ledPin = 13;
-
-boolean blink = false;
-boolean ledPin_state;
+unsigned int check_5 = 0; //Variable um die Bombe zu öffnen, 0 = zu
 
 LiquidCrystal lcd(14, 13, 12, 11, 10, 9); // Creates lcd object
 
-//-------------------- Keypad -----------------------------------------------------
+  //---------------------Keypad-----------------------------------
 
 const byte ROWS = 4; //four rows
 const byte COLS = 3; //three columns
+
 char keys[ROWS][COLS] = {
   {'1', '2', '3'},
   {'4', '5', '6'},
@@ -31,8 +28,8 @@ char keys[ROWS][COLS] = {
   {'*', '0', '#'}
 };
 
-char keyword_in[_myArray_cnt] = {' ', ' ', ' ', ' '};;
-char keyword_set[_myArray_cnt] = {'2', '3', '5', '6'};
+char keyword_in[_myArray_cnt] = {' ', ' ', ' ', ' ',' ', ' ', ' ', ' '};
+char keyword_set[_myArray_cnt] = {'0', '6', '0', '4', '2', '0', '1', '7'};
 
 int zaehler = 0;
 
@@ -40,9 +37,8 @@ byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
 
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
-//-------------------------------------------------------------------------------------------
 
-//-------------------- Stangenspiel -----------------------------------------------------
+  //--------------------Stangenspiel------------------------------
 
 int Startbutton = 0;
 int buttonStateStart;
@@ -68,26 +64,21 @@ int buttonPin3 = 25;
 int buttonPin4 = 26;
 
 int a = 1;  // Variable, die sich erhöht, wenn Spieler eine Kombination im Spiel richtig hat
+  //--------------------------------------------------------------
 
-//-------------------- Countdown -----------------------------------------------------
-
-//-------------------------------------------------------------------------------------------
 
 void setup() {
   Serial.begin(9600);
-  pinMode(ledPin, OUTPUT);              // Sets the digital pin as output.
-  digitalWrite(ledPin, HIGH);           // Turn the LED on.
-  ledPin_state = digitalRead(ledPin);   // Store initial LED state. HIGH when LED is on.
 
   lcd.begin(16, 2);                     // Activates 16 x 2 lcd
   LCDwelcomeScreen();
 
-  //------------------------- Keypad -----------------------------------------------------
+  //---------------------Keypad-----------------------------------
 
   keypad.addEventListener(keypadEvent); // Add an event listener for this keypad
 
 
-  //-------------------------- Stangenspiel---------------------------------------------
+  //--------------------Stangenspiel------------------------------
 
   pinMode(red1, OUTPUT);
   pinMode(red2, OUTPUT);
@@ -106,23 +97,30 @@ void setup() {
 
   pinMode(Startbutton, INPUT);
 
-  //-------------------------------------------------------------------------------------------
+  //--------------------------------------------------------------
 }
 
 void loop() {
 
-  //-------------------------- Keypad ---------------------------------
-
-  if (check) {
+  if (check_1) {
     keyPadcode();
   }
-
-  //-------------------------- Stangenspiel ---------------------------------
 
   if (check_2) {
     stangenSpiel();
   }
 
+  if (check_3) {
+    raetselSpiel();
+  }
+
+  if (check_4) {
+    colourCards();
+  }
+
+  if (check_5) {
+    openBomb();
+  }
 }
 
 // Taking care of some special events.
@@ -137,12 +135,17 @@ void keypadEvent(KeypadEvent key) {
         }
       }
       if (key == '*') {
-        if (zaehler == 4) {
+        if (zaehler == _myArray_cnt) {
           if (keyword_in[0] == keyword_set[0] and keyword_in[1] == keyword_set[1] and
-              keyword_in[2] == keyword_set[2] and keyword_in[3] == keyword_set[3]) {
+              keyword_in[2] == keyword_set[2] and keyword_in[3] == keyword_set[3] and
+              keyword_in[4] == keyword_set[4] and keyword_in[5] == keyword_set[5] and
+              keyword_in[6] == keyword_set[6] and keyword_in[7] == keyword_set[7]) {
+
             Serial.println("You got the right Code");
             LCDcorrect();
             resetKeypad();
+            check_1 = 0;
+            check_2 = 1;
             break;
           }
           if (keyword_in != keyword_set) {
@@ -179,14 +182,14 @@ void keypadEvent(KeypadEvent key) {
   }
 }
 
-//-------------------------- keypad.lcd ---------------------------------
+  //--------------------Keypad LCD--------------------------------
 
 void LCDwelcomeScreen() {
   lcd.clear();
   lcd.setCursor(0, 0);          // (pos, row) starting with 0
   lcd.print("Enter Serial Nr:");
   lcd.setCursor(2, 1);
-  lcd.print("===MCTUBS===");
+  lcd.print("===MCBS===");
 }
 
 void LCDpassword() {
@@ -203,7 +206,7 @@ void LCDpassword() {
   Serial.print("LCDPW ");
   Serial.println(keyword_in);
   lcd.setCursor(0, 1);
-  lcd.print("Press # Delete");
+  lcd.print("#Delete *Confirm");
 }
 
 void LCDdotting(int pos, int row) {
@@ -275,14 +278,14 @@ void LCDmoreNumbers() {
   delay(2000);
 }
 
-//-------------------------- keypad.lcd ---------------------------------
+  //--------------------Keypad LCD--------------------------------
 
 void keyPadcode() {
   char key = keypad.getKey();
 
   if (key) {
 
-    if (zaehler <= 3 and key != '*' and key != '#') {
+    if (zaehler <= (_myArray_cnt - 1) and key != '*' and key != '#') {
       keyword_in[zaehler] = key;
       LCDpassword();
       zaehler += 1;
@@ -293,7 +296,7 @@ void keyPadcode() {
     Serial.println(keyword_in);
     Serial.println(zaehler);
 
-    if (zaehler == 4) {
+    if (zaehler == _myArray_cnt) {
       LCDpassword();
       Serial.println("Press * for check password");
       Serial.println("Press # for delete last number");
@@ -549,7 +552,6 @@ void stangenSpiel() {
     nothingPressed();
   }
 
-  //--------------------------------------------------------------
   if (a == 5)
   {
 
@@ -603,7 +605,37 @@ void nothingPressed() {
   digitalWrite (red4, LOW);
 }
 
+  //--------------------------------------------------------------
+
+  //--------------------Rätselspiel-------------------------------
+
+void raetselSpiel(){
+  
+}
+
+  //--------------------------------------------------------------
+
+  //--------------------ColourCards-------------------------------
+
+void colourCards(){
+  
+}
+
+  //--------------------------------------------------------------
+
+  //--------------------Countdown---------------------------------
+
 void countDown() {
 
 }
+
+  //--------------------------------------------------------------
+
+  //--------------------ÖffneBombe--------------------------------
+
+void openBomb() {
+  
+}
+
+  //--------------------------------------------------------------
 
