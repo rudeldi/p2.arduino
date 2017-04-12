@@ -65,7 +65,23 @@ int buttonPin4 = 26;
 
 int a = 1;  // Variable, die sich erhöht, wenn Spieler eine Kombination im Spiel richtig hat
   //--------------------------------------------------------------
-
+  
+  //--------------------Station colourCards------------------------------
+#define S0 27
+#define S1 28
+#define S2 29
+#define S3 30
+#define sensorOut A2
+#define rLED 31
+#define gLED 32
+#define triggerLED 33
+unsigned int colour = 0; // int max. is 30 k, unsigned int max. ist 4 mil
+unsigned int red = 0;      // rgb values stored here
+unsigned int green = 0;
+unsigned int blue = 0;
+int colourCardCounter = 0;  // sequencing
+bool colourCardWait = true; // flag needed to exit for-loop after correct card is inserted
+  //--------------------------------------------------------------
 
 void setup() {
   Serial.begin(9600);
@@ -97,6 +113,24 @@ void setup() {
 
   pinMode(Startbutton, INPUT);
 
+  //--------------------------------------------------------------
+
+  //--------------------Station colourCards------------------------------
+  pinMode(S0, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(sensorOut, INPUT);
+  pinMode(rLED, OUTPUT);
+  pinMode(gLED, OUTPUT);
+  pinMode(triggerLED, OUTPUT);
+  // Setting frequency scaling to 20%
+  digitalWrite(S0, HIGH);
+  digitalWrite(S1, LOW);
+  // Setting starting values for LEDs
+  digitalWrite(rLED, HIGH);
+  digitalWrite(gLED, LOW);
+  digitalWrite(triggerLED, HIGH);
   //--------------------------------------------------------------
 }
 
@@ -613,12 +647,129 @@ void raetselSpiel(){
   
 }
 
-  //--------------------------------------------------------------
+  //--------------------ColourCards-------------------------------
+bool colourCardRed(){
+  // (255, 0, 0)
+  if(red < green && red < blue && red < 20){
+    return true;
+  }
+  else{
+    return false;
+  }
+}
 
+bool colourCardYellow(){
+  // (255, 255, 0)
+  if(red < green && red < blue && green < blue){
+    return true;
+  }
+  else{
+    return false;
+  }
+}
+
+bool colourCardBlue(){
+  //(0, 0, 255)
+  if(blue < red && blue < green){
+    return true;
+  }
+  else{
+    return false;
+  } 
+}
+
+bool colourCardIn(){ // testing to see if card is in the slot with green triggerLED
+  //(0, 255, 0)
+  if(green < red && green < blue){
+    colourCardWait = true; // when card is removed, the loop is ready for testing again
+    digitalWrite(rLED, HIGH);
+    digitalWrite(gLED, LOW);
+    return false;
+  }
+  else{
+    return true;
+  } 
+}
   //--------------------ColourCards-------------------------------
 
 void colourCards(){
-  
+  // Setting RED photodiodes to be read
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, LOW);
+  // Reading and saving
+  red = pulseIn(sensorOut, LOW);
+  Serial.print("R = ");
+  Serial.print(red);
+  Serial.print("  ");
+  delay(100);
+
+  // Setting GREEN photodiodes to be read
+  digitalWrite(S2, HIGH);
+  digitalWrite(S3, HIGH);
+  // Reading and saving
+  green = pulseIn(sensorOut, LOW);
+  Serial.print("G = ");
+  Serial.print(green);
+  Serial.print("  ");
+  delay(100);
+
+  // Setting BLUE photodiodes to be read
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, HIGH);
+  // Reading and saving
+  blue = pulseIn(sensorOut, LOW);
+  Serial.print("B = ");
+  Serial.print(blue);
+  Serial.println("  ");
+  delay(100);
+
+  // Reading cards, comparing rgb values
+  if(colourCardIn() && colourCardWait){
+    delay(1000); // wait a moment for average values to gather
+    if(colourCardCounter == 0 && colourCardRed()){
+      colourCardCounter = 1;  
+      digitalWrite(rLED, LOW);
+      digitalWrite(gLED, HIGH);
+      colourCardWait = false; // this prevents the loop from comparing the 
+                              //current red card in the slot with colourCardCounter = 1;
+                              // = true will trigger when card is removed in colourCardIn();
+      Serial.println("Card is Red!");
+    }
+    else if(colourCardCounter == 1 && colourCardYellow()){
+      colourCardCounter = 2;
+      digitalWrite(rLED, LOW);
+      digitalWrite(gLED, HIGH);
+      colourCardWait = false;
+      Serial.println("Card is Yellow!");
+    }
+    else if(colourCardCounter == 2 && colourCardBlue()){
+      // UNLOCKED!
+      digitalWrite(rLED, LOW);
+      digitalWrite(gLED, HIGH);
+      colourCardWait = false;
+      Serial.println("Card is Blue!");
+      // Shut down colour sensor
+      digitalWrite(S0, LOW);
+      digitalWrite(S1, LOW);
+      // visual and/or audio cue
+      // lock this station and unlock next station/prize
+    }
+    else{ // What happens when the card is inserted in the wrong sequence
+      colourCardCounter = 0; // here we start over
+      // visual and/or audio cue
+      for(int i=0; i<5; i++){ // blinks five times
+        digitalWrite(rLED, LOW);
+        digitalWrite(gLED, LOW);
+        delay(300);
+        digitalWrite(rLED, HIGH);
+        digitalWrite(gLED, HIGH);
+        delay(300);
+      }
+      colourCardWait = false;
+      digitalWrite(rLED, HIGH);
+      digitalWrite(gLED, LOW);
+    }    
+  }
 }
 
   //--------------------------------------------------------------
