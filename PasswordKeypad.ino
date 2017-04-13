@@ -75,7 +75,6 @@ int a = 1;  // Variable, die sich erhöht, wenn Spieler eine Kombination im Spie
 #define rLED 31
 #define gLED 32
 #define triggerLED 33
-unsigned int colour = 0; // int max. is 30 k, unsigned int max. ist 4 mil
 unsigned int red = 0;      // rgb values stored here
 unsigned int green = 0;
 unsigned int blue = 0;
