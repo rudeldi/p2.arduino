@@ -649,7 +649,7 @@ void raetselSpiel(){
   //--------------------ColourCards-------------------------------
 bool colourCardRed(){
   // (255, 0, 0)
-  if(red < green && red < blue && red < 20){
+  if(red < green && red < blue && green > blue && red < 20){
     return true;
   }
   else{
@@ -659,7 +659,7 @@ bool colourCardRed(){
 
 bool colourCardYellow(){
   // (255, 255, 0)
-  if(red < green && red < blue && green < blue){
+  if(abs(blue-green) < 30 && red < blue && green < blue && green < 50){
     return true;
   }
   else{
@@ -669,7 +669,7 @@ bool colourCardYellow(){
 
 bool colourCardBlue(){
   //(0, 0, 255)
-  if(blue < red && blue < green){
+  if(red + green + blue > 80 && blue < red && red > green){
     return true;
   }
   else{
@@ -679,7 +679,7 @@ bool colourCardBlue(){
 
 bool colourCardIn(){ // testing to see if card is in the slot with green triggerLED
   //(0, 255, 0)
-  if(green < red && green < blue){
+  if(red + green + blue < 40 && red > green && red > blue){
     colourCardWait = true; // when card is removed, the loop is ready for testing again
     digitalWrite(rLED, HIGH);
     digitalWrite(gLED, LOW);
@@ -692,6 +692,9 @@ bool colourCardIn(){ // testing to see if card is in the slot with green trigger
   //--------------------ColourCards-------------------------------
 
 void colourCards(){
+  if(colourCardWait){
+    delay(1000);  // wait a moment for average values to gather
+  }
   // Setting RED photodiodes to be read
   digitalWrite(S2, LOW);
   digitalWrite(S3, LOW);
@@ -724,7 +727,6 @@ void colourCards(){
 
   // Reading cards, comparing rgb values
   if(colourCardIn() && colourCardWait){
-    delay(1000); // wait a moment for average values to gather
     if(colourCardCounter == 0 && colourCardRed() && !colourCardYellow() && !colourCardBlue()){
       colourCardCounter = 1;  
       digitalWrite(rLED, LOW);
@@ -743,6 +745,7 @@ void colourCards(){
     }
     else if(colourCardCounter == 2 && colourCardBlue() && !colourCardYellow() && !colourCardRed()){
       // UNLOCKED!
+      colourCardCounter = 3;
       digitalWrite(rLED, LOW);
       digitalWrite(gLED, HIGH);
       colourCardWait = false;
