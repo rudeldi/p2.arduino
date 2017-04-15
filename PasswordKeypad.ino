@@ -725,7 +725,7 @@ void colourCards(){
   // Reading cards, comparing rgb values
   if(colourCardIn() && colourCardWait){
     delay(1000); // wait a moment for average values to gather
-    if(colourCardCounter == 0 && colourCardRed()){
+    if(colourCardCounter == 0 && colourCardRed() && !colourCardYellow() && !colourCardBlue()){
       colourCardCounter = 1;  
       digitalWrite(rLED, LOW);
       digitalWrite(gLED, HIGH);
@@ -734,14 +734,14 @@ void colourCards(){
                               // = true will trigger when card is removed in colourCardIn();
       Serial.println("Card is Red!");
     }
-    else if(colourCardCounter == 1 && colourCardYellow()){
+    else if(colourCardCounter == 1 && colourCardYellow() && !colourCardRed() && !colourCardBlue()){
       colourCardCounter = 2;
       digitalWrite(rLED, LOW);
       digitalWrite(gLED, HIGH);
       colourCardWait = false;
       Serial.println("Card is Yellow!");
     }
-    else if(colourCardCounter == 2 && colourCardBlue()){
+    else if(colourCardCounter == 2 && colourCardBlue() && !colourCardYellow() && !colourCardRed()){
       // UNLOCKED!
       digitalWrite(rLED, LOW);
       digitalWrite(gLED, HIGH);
