@@ -79,7 +79,7 @@ unsigned int red = 0;      // rgb values stored here
 unsigned int green = 0;
 unsigned int blue = 0;
 int colourCardCounter = 0;  // sequencing
-bool colourCardWait = true; // flag needed to exit for-loop after correct card is inserted
+bool colourCardRemoved = true; // flag needed to exit for-loop after correct card is inserted
   //--------------------------------------------------------------
 
 void setup() {
@@ -367,7 +367,7 @@ void stangenSpiel() {
     delay(1500);
 
     digitalWrite (red3, LOW);
-    digitalWrite (green3, LOW);
+    digitalWrite (green3, LOW); // ab hier blinkt er wahrscheinlich nicht weiter oder? Es fehlt ein delay(1500); dazwischen
 
     digitalWrite (red1, HIGH);
     digitalWrite (green1, HIGH);
@@ -680,7 +680,7 @@ bool colourCardBlue(){
 bool colourCardIn(){ // testing to see if card is in the slot with green triggerLED
   //(0, 255, 0)
   if(red + green + blue < 40 && red > green && red > blue){
-    colourCardWait = true; // when card is removed, the loop is ready for testing again
+    colourCardRemoved = true; // when card is removed, the loop is ready for testing again
     digitalWrite(rLED, HIGH);
     digitalWrite(gLED, LOW);
     return false;
@@ -692,7 +692,7 @@ bool colourCardIn(){ // testing to see if card is in the slot with green trigger
   //--------------------ColourCards-------------------------------
 
 void colourCards(){
-  if(colourCardWait){
+  if(colourCardIn()){
     delay(1000);  // wait a moment for average values to gather
   }
   // Setting RED photodiodes to be read
@@ -726,12 +726,12 @@ void colourCards(){
   delay(100);
 
   // Reading cards, comparing rgb values
-  if(colourCardIn() && colourCardWait){
+  if(colourCardIn() && colourCardRemoved){
     if(colourCardCounter == 0 && colourCardRed() && !colourCardYellow() && !colourCardBlue()){
       colourCardCounter = 1;  
       digitalWrite(rLED, LOW);
       digitalWrite(gLED, HIGH);
-      colourCardWait = false; // this prevents the loop from comparing the 
+      colourCardRemoved = false; // this prevents the loop from comparing the 
                               //current red card in the slot with colourCardCounter = 1;
                               // = true will trigger when card is removed in colourCardIn();
       Serial.println("Card is Red!");
@@ -740,7 +740,7 @@ void colourCards(){
       colourCardCounter = 2;
       digitalWrite(rLED, LOW);
       digitalWrite(gLED, HIGH);
-      colourCardWait = false;
+      colourCardRemoved = false;
       Serial.println("Card is Yellow!");
     }
     else if(colourCardCounter == 2 && colourCardBlue() && !colourCardYellow() && !colourCardRed()){
@@ -748,7 +748,7 @@ void colourCards(){
       colourCardCounter = 3;
       digitalWrite(rLED, LOW);
       digitalWrite(gLED, HIGH);
-      colourCardWait = false;
+      colourCardRemoved = false;
       Serial.println("Card is Blue!");
       // Shut down colour sensor
       digitalWrite(S0, LOW);
@@ -767,7 +767,7 @@ void colourCards(){
         digitalWrite(gLED, HIGH);
         delay(300);
       }
-      colourCardWait = false;
+      colourCardRemoved = false;
       digitalWrite(rLED, HIGH);
       digitalWrite(gLED, LOW);
     }    
