@@ -669,7 +669,7 @@ bool colourCardYellow(){
 
 bool colourCardBlue(){
   //(0, 0, 255)
-  if(red + green + blue > 80 && blue < red && red > green){
+  if(red + green + blue > 60 && blue < red && red > green){
     return true;
   }
   else{
@@ -689,12 +689,8 @@ bool colourCardIn(){ // testing to see if card is in the slot with green trigger
     return true;
   } 
 }
-  //--------------------ColourCards-------------------------------
 
-void colourCards(){
-  if(colourCardIn()){
-    delay(1000);  // wait a moment for average values to gather
-  }
+void colourSense(){
   // Setting RED photodiodes to be read
   digitalWrite(S2, LOW);
   digitalWrite(S3, LOW);
@@ -723,10 +719,17 @@ void colourCards(){
   Serial.print("B = ");
   Serial.print(blue);
   Serial.println("  ");
-  delay(100);
+  delay(100);  
+}
+  //--------------------ColourCards-------------------------------
 
+void colourCards(){
+  colourSense();  
   // Reading cards, comparing rgb values
   if(colourCardIn() && colourCardRemoved){
+    for(int i=0; i<3; i++){ // takes the third value
+      colourSense();
+    }
     if(colourCardCounter == 0 && colourCardRed() && !colourCardYellow() && !colourCardBlue()){
       colourCardCounter = 1;  
       digitalWrite(rLED, LOW);
