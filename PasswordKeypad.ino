@@ -741,7 +741,7 @@ void colourCards(){
       break;
     case 3:
       digitalWrite(progressLED3, HIGH);
-  lb    break;
+      break;
   }
     
   colourSense();  
