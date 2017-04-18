@@ -696,7 +696,7 @@ void raetselSpiel(){
       break;
   }
   
-  if(quizButtonWait){ // Ready to enter loop as long as no buttons are pressed
+  if(quizButtonWait && (quizButton1 || quizButton2 || quizButton3 || quizButton4)){ // Ready to enter loop as long as no buttons are pressed
     if(quizCounter == 0 && quizButton1 == quizSequence1[0] && quizButton2 == quizSequence1[1] && quizButton3 == quizSequence1[2] && quizButton4 == quizSequence1[3]){
       quizCounter = 1;
       quizButtonWait = false;
