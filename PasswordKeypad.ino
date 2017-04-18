@@ -75,6 +75,9 @@ int a = 1;  // Variable, die sich erhöht, wenn Spieler eine Kombination im Spie
 #define rLED 31
 #define gLED 32
 #define triggerLED 33
+#define progressLED1 34
+#define progressLED2 35
+#define progressLED3 36
 unsigned int red = 0;      // rgb values stored here
 unsigned int green = 0;
 unsigned int blue = 0;
@@ -724,6 +727,23 @@ void colourSense(){
   //--------------------ColourCards-------------------------------
 
 void colourCards(){
+  switch(colourCardCounter){
+  case 0:
+    digitalWrite(progressLED1, LOW);  
+    digitalWrite(progressLED2, LOW); 
+    digitalWrite(progressLED3, LOW); 
+    break;
+  case 1:
+    digitalWrite(progressLED1, HIGH);
+    break;
+  case 2:
+    digitalWrite(progressLED2, HIGH);
+    break;
+  case 3:
+    digitalWrite(progressLED3, HIGH);
+    break;
+  }
+    
   colourSense();  
   // Reading cards, comparing rgb values
   if(colourCardIn() && colourCardRemoved){
@@ -762,12 +782,11 @@ void colourCards(){
     else{ // What happens when the card is inserted in the wrong sequence
       colourCardCounter = 0; // here we start over
       // visual and/or audio cue
-      for(int i=0; i<5; i++){ // blinks five times
+      for(int i=0; i<3; i++){ // blinks five times
         digitalWrite(rLED, LOW);
         digitalWrite(gLED, LOW);
         delay(300);
         digitalWrite(rLED, HIGH);
-        digitalWrite(gLED, HIGH);
         delay(300);
       }
       colourCardRemoved = false;
