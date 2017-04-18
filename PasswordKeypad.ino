@@ -728,20 +728,20 @@ void colourSense(){
 
 void colourCards(){
   switch(colourCardCounter){
-  case 0:
-    digitalWrite(progressLED1, LOW);  
-    digitalWrite(progressLED2, LOW); 
-    digitalWrite(progressLED3, LOW); 
-    break;
-  case 1:
-    digitalWrite(progressLED1, HIGH);
-    break;
-  case 2:
-    digitalWrite(progressLED2, HIGH);
-    break;
-  case 3:
-    digitalWrite(progressLED3, HIGH);
-    break;
+    case 0:
+      digitalWrite(progressLED1, LOW);  
+      digitalWrite(progressLED2, LOW); 
+      digitalWrite(progressLED3, LOW); 
+      break;
+    case 1:
+      digitalWrite(progressLED1, HIGH);
+      break;
+    case 2:
+      digitalWrite(progressLED2, HIGH);
+      break;
+    case 3:
+      digitalWrite(progressLED3, HIGH);
+  lb    break;
   }
     
   colourSense();  
