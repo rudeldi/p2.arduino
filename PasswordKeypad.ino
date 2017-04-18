@@ -434,7 +434,7 @@ void stangenSpiel() {
   Serial.println (buttonState4);
 
 
-  if ((buttonState3 == 0) && (a == 0))  {                            //erstes Kriterium: Button_3 drÃ¼cken
+  if ((buttonState3 == 0) && (buttonState1 == 1) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 0))  {                            //erstes Kriterium: Button_3 drÃ¼cken
     Serial.println ("Knopf 3 gedrÃ¼ckt - richtig!");
     digitalWrite (green3, HIGH);
     delay(2000);
@@ -462,7 +462,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  if ((buttonState1 == 0) && (a == 1)) {
+  if (((buttonState3 == 1) && (buttonState1 == 0) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 1)) {
     Serial.println("Knopf 1 nach 3 gedrÃ¼ckt - richtig!");
 
     digitalWrite (green1, HIGH);
@@ -475,7 +475,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  else if  (((buttonState2 == 0) && (a == 1)) || ((buttonState4 == 0) && (a == 1)) )  {
+  else if  (((buttonState2 == 0) && (a == 1)) || ((buttonState4 == 0) && (a == 1)) || ((buttonState3 == 0) && (a == 1)) )  {
     for (int i; i < 10; i++)
     {
       Serial.println("falsch - zweites Kriterium!");
@@ -494,7 +494,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  if ((buttonState2 == 0) && (a == 2)) {
+  if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 0) && (buttonState4 == 1) && (a == 2)) {
     Serial.println("Knopf 2 nach 1 gedrÃ¼ckt - richtig!");
 
     digitalWrite (green2, HIGH);
@@ -507,7 +507,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  else if  ( ((buttonState3 == 0) && (a == 2)) || ((buttonState4 == 0) && (a == 2)) )  {
+  else if  ( ((buttonState3 == 0) && (a == 2)) || ((buttonState4 == 0) && (a == 2)) || ((buttonState1 == 0) && (a == 2)))  {
     for (int i; i < 10; i++)
     {
       Serial.println("falsch - drittes Kriterium!");
@@ -525,7 +525,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  if ((buttonState4 == 0) && (a == 3)) {
+  if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 1) && (buttonState4 == 0) && (a == 3)) {
     Serial.println("Knopf 4 nach 1 gedrÃ¼ckt - richtig!");
 
     digitalWrite (green4, HIGH);
@@ -538,7 +538,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  else if  (((buttonState1 == 0) && (a == 3)) || ((buttonState3 == 0) && (a == 3)) )  {
+  else if  (((buttonState1 == 0) && (a == 3)) || ((buttonState3 == 0) && (a == 3)) || ((buttonState2 == 0) && (a == 3)) )  {
     for (int i; i < 10; i++)
     {
       Serial.println("falsch - viertes Kriterium!");
@@ -556,7 +556,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  if ((buttonState2 == 0) && (a == 4)) {
+  if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 0) && (buttonState4 == 1) && (a == 4)) {
     Serial.println("Knopf 2 nach 4 gedrÃ¼ckt - richtig!");
 
     digitalWrite (green2, HIGH);
@@ -569,7 +569,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  else if  (((buttonState1 == 0) && (a == 4)) || ((buttonState3 == 0) && (a == 4))  )  {
+  else if  (((buttonState1 == 0) && (a == 4)) || ((buttonState3 == 0) && (a == 4)) || ((buttonState4) && (a == 4)) )  {
     for (int i; i < 10; i++)
     {
       Serial.println("falsch - fÃ¼nftes Kriterium!");
