@@ -85,6 +85,24 @@ int colourCardCounter = 0;  // sequencing
 bool colourCardRemoved = true; // flag needed to exit for-loop after correct card is inserted
   //--------------------------------------------------------------
 
+  //--------------------Rätselspiel-------------------------------
+#define quizButton1 37
+#define quizButton2 38
+#define quizButton3 39
+#define quizButton4 40
+#define quizLED1 41
+#define quizLED2 42
+#define quizLED3 43
+#define quizLED4 44
+
+int quizCounter = 0;
+int quizSequence1[4] = {0, 1, 0, 0}; // define ABCD answers, B
+int quizSequence2[4] = {0, 0, 1, 0}; // C
+int quizSequence3[4] = {1, 0, 0, 0}; // A
+int quizSequence4[4] = {0, 0, 0, 1}; // D
+bool quizButtonWait = true;
+  //--------------------Rätselspiel-------------------------------
+
 void setup() {
   Serial.begin(9600);
 
@@ -134,6 +152,17 @@ void setup() {
   digitalWrite(gLED, LOW);
   digitalWrite(triggerLED, HIGH);
   //--------------------------------------------------------------
+
+  //--------------------Rätselspiel-------------------------------
+  pinMode(quizButton1, INPUT);
+  pinMode(quizButton2, INPUT);
+  pinMode(quizButton3, INPUT);
+  pinMode(quizButton4, INPUT);
+  pinMode(quizLED1, OUTPUT);
+  pinMode(quizLED2, OUTPUT);
+  pinMode(quizLED3, OUTPUT);
+  pinMode(quizLED4, OUTPUT);
+  //--------------------Rätselspiel-------------------------------
 }
 
 void loop() {
@@ -370,7 +399,7 @@ void stangenSpiel() {
     delay(1500);
 
     digitalWrite (red3, LOW);
-    digitalWrite (green3, LOW); // ab hier blinkt er wahrscheinlich nicht weiter oder? Es fehlt ein delay(1500); dazwischen
+    digitalWrite (green3, LOW);
 
     digitalWrite (red1, HIGH);
     digitalWrite (green1, HIGH);
@@ -646,7 +675,65 @@ void nothingPressed() {
   //--------------------Rätselspiel-------------------------------
 
 void raetselSpiel(){
+  switch (quizCounter){ // progress bar
+    case 0:
+      digitalWrite(quizLED1, LOW);
+      digitalWrite(quizLED2, LOW);
+      digitalWrite(quizLED3, LOW);
+      digitalWrite(quizLED4, LOW);
+      break;
+    case 1:
+      digitalWrite(quizLED1, HIGH);
+      break;
+    case 2:
+      digitalWrite(quizLED2, HIGH);
+      break;
+    case 3:
+      digitalWrite(quizLED3, HIGH);
+      break;
+    case 4:
+      digitalWrite(quizLED4, HIGH);
+      break;
+  }
   
+  if(quizButtonWait){ // Ready to enter loop as long as no buttons are pressed
+    if(quizCounter == 0 && quizButton1 == quizSequence1[0] && quizButton2 == quizSequence1[1] && quizButton3 == quizSequence1[2] && quizButton4 == quizSequence1[3]){
+      quizCounter = 1;
+      quizButtonWait = false;
+    }
+    else if(quizCounter == 1 && quizButton1 == quizSequence2[0] && quizButton2 == quizSequence2[1] && quizButton3 == quizSequence2[2] && quizButton4 == quizSequence2[3]){
+      quizCounter = 2;
+      quizButtonWait = false; 
+    }
+    else if(quizCounter == 2 && quizButton1 == quizSequence3[0] && quizButton2 == quizSequence3[1] && quizButton3 == quizSequence3[2] && quizButton4 == quizSequence3[3]){
+      quizCounter = 3;  
+      quizButtonWait = false;
+    }
+    else if(quizCounter == 3 && quizButton1 == quizSequence4[0] && quizButton2 == quizSequence4[1] && quizButton3 == quizSequence4[2] && quizButton4 == quizSequence4[3]){
+      quizCounter = 4;
+      quizButtonWait = false;
+    }
+    else{
+      quizCounter = 0; // Here we start over
+      for(int i=0; i<3; i++){
+        digitalWrite(quizLED1, LOW);
+        digitalWrite(quizLED2, LOW);
+        digitalWrite(quizLED3, LOW);
+        digitalWrite(quizLED4, LOW);
+        delay(300);
+        digitalWrite(quizLED1, HIGH);
+        digitalWrite(quizLED2, HIGH);
+        digitalWrite(quizLED3, HIGH);
+        digitalWrite(quizLED4, HIGH); 
+        delay(300); 
+        quizButtonWait = false;    
+      }
+    }
+
+    if(!quizButton1 && !quizButton2 && !quizButton3 && !quizButton4){
+      quizButtonWait = true; // Once all buttons are released, it is ready to enter the loop again.
+    }
+  }
 }
 
   //--------------------ColourCards-------------------------------
