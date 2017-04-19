@@ -7,6 +7,29 @@
 #include <LiquidCrystal.h>
 
 #define _myArray_cnt 8
+      //--------------------Station colourCards------------------------------
+#define S0 27
+#define S1 28
+#define S2 29
+#define S3 30
+#define sensorOut A2
+#define rLED 31
+#define gLED 32
+#define triggerLED 33
+#define progressLED1 34
+#define progressLED2 35
+#define progressLED3 36
+      //--------------------Station colourCards------------------------------
+      //--------------------Rätselspiel-------------------------------
+#define quizButton1 37
+#define quizButton2 38
+#define quizButton3 39
+#define quizButton4 40
+#define quizLED1 41
+#define quizLED2 42
+#define quizLED3 43
+#define quizLED4 44
+      //--------------------Rätselspiel-------------------------------
 
 unsigned int check_1 = 1; //Variable um Keypad zu aktivieren, 0 = aus
 unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
@@ -67,17 +90,6 @@ int a = 1;  // Variable, die sich erhöht, wenn Spieler eine Kombination im Spie
   //--------------------------------------------------------------
   
   //--------------------Station colourCards------------------------------
-#define S0 27
-#define S1 28
-#define S2 29
-#define S3 30
-#define sensorOut A2
-#define rLED 31
-#define gLED 32
-#define triggerLED 33
-#define progressLED1 34
-#define progressLED2 35
-#define progressLED3 36
 unsigned int red = 0;      // rgb values stored here
 unsigned int green = 0;
 unsigned int blue = 0;
@@ -86,15 +98,6 @@ bool colourCardRemoved = true; // flag needed to exit for-loop after correct car
   //--------------------------------------------------------------
 
   //--------------------Rätselspiel-------------------------------
-#define quizButton1 37
-#define quizButton2 38
-#define quizButton3 39
-#define quizButton4 40
-#define quizLED1 41
-#define quizLED2 42
-#define quizLED3 43
-#define quizLED4 44
-
 int quizCounter = 0;
 int quizSequence1[4] = {0, 1, 0, 0}; // define ABCD answers, B
 int quizSequence2[4] = {0, 0, 1, 0}; // C
