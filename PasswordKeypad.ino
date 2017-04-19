@@ -31,9 +31,9 @@
 #define quizLED4 44
       //--------------------Rätselspiel-------------------------------
 
-unsigned int check_1 = 1; //Variable um Keypad zu aktivieren, 0 = aus
+unsigned int check_1 = 0; //Variable um Keypad zu aktivieren, 0 = aus
 unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
-unsigned int check_3 = 0; //Variable um Station 3 zu aktivieren, 0 = aus
+unsigned int check_3 = 1; //Variable um Station 3 zu aktivieren, 0 = aus
 unsigned int check_4 = 0; //Variable um Station 4 zu aktivieren, 0 = aus
 unsigned int check_5 = 0; //Variable um die Bombe zu öffnen, 0 = zu
 
@@ -497,7 +497,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  if (((buttonState3 == 1) && (buttonState1 == 0) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 1)) {
+  if ((buttonState3 == 1) && (buttonState1 == 0) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 1)) {
     Serial.println("Knopf 1 nach 3 gedrÃ¼ckt - richtig!");
 
     digitalWrite (green1, HIGH);
