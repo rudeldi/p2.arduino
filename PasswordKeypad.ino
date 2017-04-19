@@ -756,11 +756,14 @@ void raetselSpiel(){
       break;
   }
   
-    if(buttonRead1 == 1 && buttonRead2 == 1 && buttonRead3 == 1 && buttonRead4 == 1){
+  if(buttonRead1 == 1 && buttonRead2 == 1 && buttonRead3 == 1 && buttonRead4 == 1){
     quizButtonWait = true; // Once all buttons are released, it is ready to enter the loop again.
-    }
+  }
+  else{
+    quizButtonWait = false;
+  }
     
-  if(quizCounter != 4){  
+  if(quizCounter != 4){  // prevents from entering loop once this station is solved
     if(quizButtonWait && (buttonRead1 == 0 || buttonRead2 == 0 || buttonRead3 == 0 || buttonRead4 == 0)){ // Ready to enter loop as long as no buttons are pressed
       if(quizCounter == 0 && buttonRead1 == quizSequence1[0] && buttonRead2 == quizSequence1[1] && buttonRead3 == quizSequence1[2] && buttonRead4 == quizSequence1[3]){
         quizCounter = 1;
