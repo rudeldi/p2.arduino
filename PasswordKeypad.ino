@@ -99,11 +99,15 @@ bool colourCardRemoved = true; // flag needed to exit for-loop after correct car
 
   //--------------------Rätselspiel-------------------------------
 int quizCounter = 0;
-int quizSequence1[4] = {0, 1, 0, 0}; // define ABCD answers, B
-int quizSequence2[4] = {0, 0, 1, 0}; // C
-int quizSequence3[4] = {1, 0, 0, 0}; // A
-int quizSequence4[4] = {0, 0, 0, 1}; // D
+int quizSequence1[4] = {1, 0, 1, 1}; // define ABCD answers, B
+int quizSequence2[4] = {1, 1, 0, 1}; // C
+int quizSequence3[4] = {0, 1, 1, 1}; // A
+int quizSequence4[4] = {1, 1, 1, 0}; // D
 bool quizButtonWait = true;
+int buttonRead1 = 0;
+int buttonRead2 = 0;
+int buttonRead3 = 0;
+int buttonRead4 = 0;
   //--------------------Rätselspiel-------------------------------
 
 void setup() {
@@ -157,10 +161,10 @@ void setup() {
   //--------------------------------------------------------------
 
   //--------------------Rätselspiel-------------------------------
-  pinMode(quizButton1, INPUT);
-  pinMode(quizButton2, INPUT);
-  pinMode(quizButton3, INPUT);
-  pinMode(quizButton4, INPUT);
+  pinMode(quizButton1, INPUT_PULLUP);
+  pinMode(quizButton2, INPUT_PULLUP);
+  pinMode(quizButton3, INPUT_PULLUP);
+  pinMode(quizButton4, INPUT_PULLUP);
   pinMode(quizLED1, OUTPUT);
   pinMode(quizLED2, OUTPUT);
   pinMode(quizLED3, OUTPUT);
@@ -678,6 +682,12 @@ void nothingPressed() {
   //--------------------Rätselspiel-------------------------------
 
 void raetselSpiel(){
+  buttonRead1 = digitalRead(quizButton1);
+  buttonRead2 = digitalRead(quizButton2);
+  buttonRead3 = digitalRead(quizButton3);
+  buttonRead4 = digitalRead(quizButton4);
+  delay(100);
+  
   switch (quizCounter){ // progress bar
     case 0:
       digitalWrite(quizLED1, LOW);
@@ -689,52 +699,60 @@ void raetselSpiel(){
       digitalWrite(quizLED1, HIGH);
       break;
     case 2:
+      digitalWrite(quizLED1, HIGH);
       digitalWrite(quizLED2, HIGH);
       break;
     case 3:
+      digitalWrite(quizLED1, HIGH);
+      digitalWrite(quizLED2, HIGH);
       digitalWrite(quizLED3, HIGH);
       break;
     case 4:
+      digitalWrite(quizLED1, HIGH);
+      digitalWrite(quizLED2, HIGH);
+      digitalWrite(quizLED3, HIGH);
       digitalWrite(quizLED4, HIGH);
       break;
   }
   
-  if(quizButtonWait && (quizButton1 || quizButton2 || quizButton3 || quizButton4)){ // Ready to enter loop as long as no buttons are pressed
-    if(quizCounter == 0 && quizButton1 == quizSequence1[0] && quizButton2 == quizSequence1[1] && quizButton3 == quizSequence1[2] && quizButton4 == quizSequence1[3]){
-      quizCounter = 1;
-      quizButtonWait = false;
+    if(buttonRead1 == 1 && buttonRead2 == 1 && buttonRead3 == 1 && buttonRead4 == 1){
+    quizButtonWait = true; // Once all buttons are released, it is ready to enter the loop again.
     }
-    else if(quizCounter == 1 && quizButton1 == quizSequence2[0] && quizButton2 == quizSequence2[1] && quizButton3 == quizSequence2[2] && quizButton4 == quizSequence2[3]){
-      quizCounter = 2;
-      quizButtonWait = false; 
-    }
-    else if(quizCounter == 2 && quizButton1 == quizSequence3[0] && quizButton2 == quizSequence3[1] && quizButton3 == quizSequence3[2] && quizButton4 == quizSequence3[3]){
-      quizCounter = 3;  
-      quizButtonWait = false;
-    }
-    else if(quizCounter == 3 && quizButton1 == quizSequence4[0] && quizButton2 == quizSequence4[1] && quizButton3 == quizSequence4[2] && quizButton4 == quizSequence4[3]){
-      quizCounter = 4;
-      quizButtonWait = false;
-    }
-    else{
-      quizCounter = 0; // Here we start over
-      for(int i=0; i<3; i++){
-        digitalWrite(quizLED1, LOW);
-        digitalWrite(quizLED2, LOW);
-        digitalWrite(quizLED3, LOW);
-        digitalWrite(quizLED4, LOW);
-        delay(300);
-        digitalWrite(quizLED1, HIGH);
-        digitalWrite(quizLED2, HIGH);
-        digitalWrite(quizLED3, HIGH);
-        digitalWrite(quizLED4, HIGH); 
-        delay(300); 
-        quizButtonWait = false;    
+    
+  if(quizCounter != 4){  
+    if(quizButtonWait && (buttonRead1 == 0 || buttonRead2 == 0 || buttonRead3 == 0 || buttonRead4 == 0)){ // Ready to enter loop as long as no buttons are pressed
+      if(quizCounter == 0 && buttonRead1 == quizSequence1[0] && buttonRead2 == quizSequence1[1] && buttonRead3 == quizSequence1[2] && buttonRead4 == quizSequence1[3]){
+        quizCounter = 1;
+        quizButtonWait = false;
       }
-    }
-
-    if(!quizButton1 && !quizButton2 && !quizButton3 && !quizButton4){
-      quizButtonWait = true; // Once all buttons are released, it is ready to enter the loop again.
+      else if(quizCounter == 1 && buttonRead1 == quizSequence2[0] && buttonRead2 == quizSequence2[1] && buttonRead3 == quizSequence2[2] && buttonRead4 == quizSequence2[3]){
+        quizCounter = 2;
+        quizButtonWait = false; 
+      }
+      else if(quizCounter == 2 && buttonRead1 == quizSequence3[0] && buttonRead2 == quizSequence3[1] && buttonRead3 == quizSequence3[2] && buttonRead4 == quizSequence3[3]){
+        quizCounter = 3;  
+        quizButtonWait = false;
+      }
+      else if(quizCounter == 3 && buttonRead1 == quizSequence4[0] && buttonRead2 == quizSequence4[1] && buttonRead3 == quizSequence4[2] && buttonRead4 == quizSequence4[3]){
+        quizCounter = 4;
+        quizButtonWait = false;
+      }
+      else{
+        //quizCounter = 0; // Here we start over
+        for(int i=0; i<3; i++){
+          digitalWrite(quizLED1, HIGH);
+          digitalWrite(quizLED2, HIGH);
+          digitalWrite(quizLED3, HIGH);
+          digitalWrite(quizLED4, HIGH); 
+          delay(300); 
+          digitalWrite(quizLED1, LOW);
+          digitalWrite(quizLED2, LOW);
+          digitalWrite(quizLED3, LOW);
+          digitalWrite(quizLED4, LOW);
+          delay(300);
+          quizButtonWait = false;    
+        }
+      }
     }
   }
 }
