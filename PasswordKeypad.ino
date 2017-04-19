@@ -482,7 +482,7 @@ void stangenSpiel() {
   }
 
 
-  else if (buttonStateRead == 0)
+  else if (buttonStateRead == 1)
   {
     nothingPressed();
 
