@@ -7,6 +7,29 @@
 #include <LiquidCrystal.h>
 
 #define _myArray_cnt 8
+      //--------------------Station colourCards------------------------------
+#define S0 27
+#define S1 28
+#define S2 29
+#define S3 30
+#define sensorOut A2
+#define rLED 31
+#define gLED 32
+#define triggerLED 33
+#define progressLED1 34
+#define progressLED2 35
+#define progressLED3 36
+      //--------------------Station colourCards------------------------------
+      //--------------------Rätselspiel-------------------------------
+#define quizButton1 37
+#define quizButton2 38
+#define quizButton3 39
+#define quizButton4 40
+#define quizLED1 41
+#define quizLED2 42
+#define quizLED3 43
+#define quizLED4 44
+      //--------------------Rätselspiel-------------------------------
 
 unsigned int check_1 = 1; //Variable um Keypad zu aktivieren, 0 = aus
 unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
@@ -65,7 +88,23 @@ int buttonPin4 = 26;
 
 int a = 1;  // Variable, die sich erhöht, wenn Spieler eine Kombination im Spiel richtig hat
   //--------------------------------------------------------------
+  
+  //--------------------Station colourCards------------------------------
+unsigned int red = 0;      // rgb values stored here
+unsigned int green = 0;
+unsigned int blue = 0;
+int colourCardCounter = 0;  // sequencing
+bool colourCardRemoved = true; // flag needed to exit for-loop after correct card is inserted
+  //--------------------------------------------------------------
 
+  //--------------------Rätselspiel-------------------------------
+int quizCounter = 0;
+int quizSequence1[4] = {0, 1, 0, 0}; // define ABCD answers, B
+int quizSequence2[4] = {0, 0, 1, 0}; // C
+int quizSequence3[4] = {1, 0, 0, 0}; // A
+int quizSequence4[4] = {0, 0, 0, 1}; // D
+bool quizButtonWait = true;
+  //--------------------Rätselspiel-------------------------------
 
 void setup() {
   Serial.begin(9600);
@@ -98,6 +137,35 @@ void setup() {
   pinMode(Startbutton, INPUT);
 
   //--------------------------------------------------------------
+
+  //--------------------Station colourCards------------------------------
+  pinMode(S0, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(sensorOut, INPUT);
+  pinMode(rLED, OUTPUT);
+  pinMode(gLED, OUTPUT);
+  pinMode(triggerLED, OUTPUT);
+  // Setting frequency scaling to 20%
+  digitalWrite(S0, HIGH);
+  digitalWrite(S1, LOW);
+  // Setting starting values for LEDs
+  digitalWrite(rLED, HIGH);
+  digitalWrite(gLED, LOW);
+  digitalWrite(triggerLED, HIGH);
+  //--------------------------------------------------------------
+
+  //--------------------Rätselspiel-------------------------------
+  pinMode(quizButton1, INPUT);
+  pinMode(quizButton2, INPUT);
+  pinMode(quizButton3, INPUT);
+  pinMode(quizButton4, INPUT);
+  pinMode(quizLED1, OUTPUT);
+  pinMode(quizLED2, OUTPUT);
+  pinMode(quizLED3, OUTPUT);
+  pinMode(quizLED4, OUTPUT);
+  //--------------------Rätselspiel-------------------------------
 }
 
 void loop() {
@@ -401,7 +469,7 @@ void stangenSpiel() {
   Serial.println (buttonState4);
 
 
-  if ((buttonState3 == 0) && (a == 0))  {                            //erstes Kriterium: Button_3 drÃ¼cken
+  if ((buttonState3 == 0) && (buttonState1 == 1) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 0))  {                            //erstes Kriterium: Button_3 drÃ¼cken
     Serial.println ("Knopf 3 gedrÃ¼ckt - richtig!");
     digitalWrite (green3, HIGH);
     delay(2000);
@@ -429,7 +497,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  if ((buttonState1 == 0) && (a == 1)) {
+  if (((buttonState3 == 1) && (buttonState1 == 0) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 1)) {
     Serial.println("Knopf 1 nach 3 gedrÃ¼ckt - richtig!");
 
     digitalWrite (green1, HIGH);
@@ -442,7 +510,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  else if  (((buttonState2 == 0) && (a == 1)) || ((buttonState4 == 0) && (a == 1)) )  {
+  else if  (((buttonState2 == 0) && (a == 1)) || ((buttonState4 == 0) && (a == 1)) || ((buttonState3 == 0) && (a == 1)) )  {
     for (int i; i < 10; i++)
     {
       Serial.println("falsch - zweites Kriterium!");
@@ -461,7 +529,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  if ((buttonState2 == 0) && (a == 2)) {
+  if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 0) && (buttonState4 == 1) && (a == 2)) {
     Serial.println("Knopf 2 nach 1 gedrÃ¼ckt - richtig!");
 
     digitalWrite (green2, HIGH);
@@ -474,7 +542,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  else if  ( ((buttonState3 == 0) && (a == 2)) || ((buttonState4 == 0) && (a == 2)) )  {
+  else if  ( ((buttonState3 == 0) && (a == 2)) || ((buttonState4 == 0) && (a == 2)) || ((buttonState1 == 0) && (a == 2)))  {
     for (int i; i < 10; i++)
     {
       Serial.println("falsch - drittes Kriterium!");
@@ -492,7 +560,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  if ((buttonState4 == 0) && (a == 3)) {
+  if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 1) && (buttonState4 == 0) && (a == 3)) {
     Serial.println("Knopf 4 nach 1 gedrÃ¼ckt - richtig!");
 
     digitalWrite (green4, HIGH);
@@ -505,7 +573,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  else if  (((buttonState1 == 0) && (a == 3)) || ((buttonState3 == 0) && (a == 3)) )  {
+  else if  (((buttonState1 == 0) && (a == 3)) || ((buttonState3 == 0) && (a == 3)) || ((buttonState2 == 0) && (a == 3)) )  {
     for (int i; i < 10; i++)
     {
       Serial.println("falsch - viertes Kriterium!");
@@ -523,7 +591,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  if ((buttonState2 == 0) && (a == 4)) {
+  if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 0) && (buttonState4 == 1) && (a == 4)) {
     Serial.println("Knopf 2 nach 4 gedrÃ¼ckt - richtig!");
 
     digitalWrite (green2, HIGH);
@@ -536,7 +604,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  else if  (((buttonState1 == 0) && (a == 4)) || ((buttonState3 == 0) && (a == 4))  )  {
+  else if  (((buttonState1 == 0) && (a == 4)) || ((buttonState3 == 0) && (a == 4)) || ((buttonState4) && (a == 4)) )  {
     for (int i; i < 10; i++)
     {
       Serial.println("falsch - fÃ¼nftes Kriterium!");
@@ -610,15 +678,212 @@ void nothingPressed() {
   //--------------------Rätselspiel-------------------------------
 
 void raetselSpiel(){
+  switch (quizCounter){ // progress bar
+    case 0:
+      digitalWrite(quizLED1, LOW);
+      digitalWrite(quizLED2, LOW);
+      digitalWrite(quizLED3, LOW);
+      digitalWrite(quizLED4, LOW);
+      break;
+    case 1:
+      digitalWrite(quizLED1, HIGH);
+      break;
+    case 2:
+      digitalWrite(quizLED2, HIGH);
+      break;
+    case 3:
+      digitalWrite(quizLED3, HIGH);
+      break;
+    case 4:
+      digitalWrite(quizLED4, HIGH);
+      break;
+  }
   
+  if(quizButtonWait && (quizButton1 || quizButton2 || quizButton3 || quizButton4)){ // Ready to enter loop as long as no buttons are pressed
+    if(quizCounter == 0 && quizButton1 == quizSequence1[0] && quizButton2 == quizSequence1[1] && quizButton3 == quizSequence1[2] && quizButton4 == quizSequence1[3]){
+      quizCounter = 1;
+      quizButtonWait = false;
+    }
+    else if(quizCounter == 1 && quizButton1 == quizSequence2[0] && quizButton2 == quizSequence2[1] && quizButton3 == quizSequence2[2] && quizButton4 == quizSequence2[3]){
+      quizCounter = 2;
+      quizButtonWait = false; 
+    }
+    else if(quizCounter == 2 && quizButton1 == quizSequence3[0] && quizButton2 == quizSequence3[1] && quizButton3 == quizSequence3[2] && quizButton4 == quizSequence3[3]){
+      quizCounter = 3;  
+      quizButtonWait = false;
+    }
+    else if(quizCounter == 3 && quizButton1 == quizSequence4[0] && quizButton2 == quizSequence4[1] && quizButton3 == quizSequence4[2] && quizButton4 == quizSequence4[3]){
+      quizCounter = 4;
+      quizButtonWait = false;
+    }
+    else{
+      quizCounter = 0; // Here we start over
+      for(int i=0; i<3; i++){
+        digitalWrite(quizLED1, LOW);
+        digitalWrite(quizLED2, LOW);
+        digitalWrite(quizLED3, LOW);
+        digitalWrite(quizLED4, LOW);
+        delay(300);
+        digitalWrite(quizLED1, HIGH);
+        digitalWrite(quizLED2, HIGH);
+        digitalWrite(quizLED3, HIGH);
+        digitalWrite(quizLED4, HIGH); 
+        delay(300); 
+        quizButtonWait = false;    
+      }
+    }
+
+    if(!quizButton1 && !quizButton2 && !quizButton3 && !quizButton4){
+      quizButtonWait = true; // Once all buttons are released, it is ready to enter the loop again.
+    }
+  }
 }
 
-  //--------------------------------------------------------------
+  //--------------------ColourCards-------------------------------
+bool colourCardRed(){
+  // (255, 0, 0)
+  if(red < green && red < blue && green > blue && red < 20){
+    return true;
+  }
+  else{
+    return false;
+  }
+}
 
+bool colourCardYellow(){
+  // (255, 255, 0)
+  if(abs(blue-green) < 30 && red < blue && green < blue && green < 50){
+    return true;
+  }
+  else{
+    return false;
+  }
+}
+
+bool colourCardBlue(){
+  //(0, 0, 255)
+  if(red + green + blue > 60 && blue < red && red > green){
+    return true;
+  }
+  else{
+    return false;
+  } 
+}
+
+bool colourCardIn(){ // testing to see if card is in the slot with green triggerLED
+  //(0, 255, 0)
+  if(red + green + blue < 40 && red > green && red > blue){
+    colourCardRemoved = true; // when card is removed, the loop is ready for testing again
+    digitalWrite(rLED, HIGH);
+    digitalWrite(gLED, LOW);
+    return false;
+  }
+  else{
+    return true;
+  } 
+}
+
+void colourSense(){
+  // Setting RED photodiodes to be read
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, LOW);
+  // Reading and saving
+  red = pulseIn(sensorOut, LOW);
+  Serial.print("R = ");
+  Serial.print(red);
+  Serial.print("  ");
+  delay(100);
+
+  // Setting GREEN photodiodes to be read
+  digitalWrite(S2, HIGH);
+  digitalWrite(S3, HIGH);
+  // Reading and saving
+  green = pulseIn(sensorOut, LOW);
+  Serial.print("G = ");
+  Serial.print(green);
+  Serial.print("  ");
+  delay(100);
+
+  // Setting BLUE photodiodes to be read
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, HIGH);
+  // Reading and saving
+  blue = pulseIn(sensorOut, LOW);
+  Serial.print("B = ");
+  Serial.print(blue);
+  Serial.println("  ");
+  delay(100);  
+}
   //--------------------ColourCards-------------------------------
 
 void colourCards(){
-  
+  switch(colourCardCounter){
+    case 0:
+      digitalWrite(progressLED1, LOW);  
+      digitalWrite(progressLED2, LOW); 
+      digitalWrite(progressLED3, LOW); 
+      break;
+    case 1:
+      digitalWrite(progressLED1, HIGH);
+      break;
+    case 2:
+      digitalWrite(progressLED2, HIGH);
+      break;
+    case 3:
+      digitalWrite(progressLED3, HIGH);
+      break;
+  }
+    
+  colourSense();  
+  // Reading cards, comparing rgb values
+  if(colourCardIn() && colourCardRemoved){
+    for(int i=0; i<3; i++){ // takes the third value
+      colourSense();
+    }
+    if(colourCardCounter == 0 && colourCardRed() && !colourCardYellow() && !colourCardBlue()){
+      colourCardCounter = 1;  
+      digitalWrite(rLED, LOW);
+      digitalWrite(gLED, HIGH);
+      colourCardRemoved = false; // this prevents the loop from comparing the 
+                              //current red card in the slot with colourCardCounter = 1;
+                              // = true will trigger when card is removed in colourCardIn();
+      Serial.println("Card is Red!");
+    }
+    else if(colourCardCounter == 1 && colourCardYellow() && !colourCardRed() && !colourCardBlue()){
+      colourCardCounter = 2;
+      digitalWrite(rLED, LOW);
+      digitalWrite(gLED, HIGH);
+      colourCardRemoved = false;
+      Serial.println("Card is Yellow!");
+    }
+    else if(colourCardCounter == 2 && colourCardBlue() && !colourCardYellow() && !colourCardRed()){
+      // UNLOCKED!
+      colourCardCounter = 3;
+      digitalWrite(rLED, LOW);
+      digitalWrite(gLED, HIGH);
+      colourCardRemoved = false;
+      Serial.println("Card is Blue!");
+      // Shut down colour sensor
+      digitalWrite(S0, LOW);
+      digitalWrite(S1, LOW);
+      // visual and/or audio cue
+      // lock this station and unlock next station/prize
+    }
+    else{ // What happens when the card is inserted in the wrong sequence
+      colourCardCounter = 0; // here we start over
+      // visual and/or audio cue
+      for(int i=0; i<3; i++){ // blinks five times
+        digitalWrite(rLED, LOW);
+        digitalWrite(gLED, LOW);
+        delay(300);
+        digitalWrite(rLED, HIGH);
+        delay(300);
+      }
+      colourCardRemoved = false;
+      digitalWrite(rLED, HIGH);
+      digitalWrite(gLED, LOW);
+    }    
+  }
 }
 
   //--------------------------------------------------------------
