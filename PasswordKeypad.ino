@@ -2,9 +2,12 @@
     V0.1    12.3.2017 Keypad
     V0.2    1.4.2017  Stangenspiel
     V0.2.1  5.4.2017  Keypad fixed
+    V0.3    19.4.2017 Games added
+    V0.3.1  19.4.2017 Countdown addad
 */
 #include <Keypad.h>
 #include <LiquidCrystal.h>
+#include "SevSeg.h"
 
 #define _myArray_cnt 8
       //--------------------Station colourCards------------------------------
@@ -36,6 +39,7 @@ unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
 unsigned int check_3 = 0; //Variable um Station 3 zu aktivieren, 0 = aus
 unsigned int check_4 = 0; //Variable um Station 4 zu aktivieren, 0 = aus
 unsigned int check_5 = 0; //Variable um die Bombe zu öffnen, 0 = zu
+unsigned int countdown = 0;
 
 LiquidCrystal lcd(14, 13, 12, 11, 10, 9); // Creates lcd object
 
@@ -58,6 +62,8 @@ int zaehler = 0;
 
 byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
+
+
 
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
@@ -106,6 +112,18 @@ int quizSequence4[4] = {0, 0, 0, 1}; // D
 bool quizButtonWait = true;
   //--------------------Rätselspiel-------------------------------
 
+  //--------------------Countdown-----------------------------
+
+SevSeg sevseg;
+byte numDigits = 4;
+byte digitPins[] = {45, 46, 47, 48};
+byte segmentPins[] = {49, 50, 51, 52, 53, 54, 57, 58};
+unsigned long timer = millis();
+int deciSeconds = 0;
+unsigned long totalTime = 300000;
+int showTime = 3000;
+      
+   //--------------------Countdown-----------------------------
 void setup() {
   Serial.begin(9600);
 
@@ -166,9 +184,29 @@ void setup() {
   pinMode(quizLED3, OUTPUT);
   pinMode(quizLED4, OUTPUT);
   //--------------------Rätselspiel-------------------------------
+
+  //--------------------Countdown---------------------------------
+
+  sevseg.begin(COMMON_CATHODE, numDigits, digitPins, segmentPins);
+  sevseg.setBrightness(10);
+  
+  //--------------------Countdown---------------------------------
+
+  Serial.println("Setup completed...");
 }
 
 void loop() {
+
+  if (deciSeconds == 0){
+    Serial.println("Loop is running...");
+    Serial.print("Actual millis is... ");
+    Serial.print(timer);
+  }
+
+  if(countdown){
+    sevseg.setNumber(countDown(), 1);
+    sevseg.refreshDisplay();
+  }
 
   if (check_1) {
     keyPadcode();
@@ -497,7 +535,7 @@ void stangenSpiel() {
 
   //--------------------------------------------------------------
 
-  if (((buttonState3 == 1) && (buttonState1 == 0) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 1)) {
+  if (((buttonState3 == 1) && (buttonState1 == 0) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 1))) {
     Serial.println("Knopf 1 nach 3 gedrÃ¼ckt - richtig!");
 
     digitalWrite (green1, HIGH);
@@ -890,10 +928,19 @@ void colourCards(){
 
   //--------------------Countdown---------------------------------
 
-void countDown() {
+int countDown() {
 
+    if (millis() >= timer){
+    timer += 100;
+    Serial.println(millis());
+    Serial.println(timer);
+    deciSeconds = 100;
+    totalTime -= deciSeconds;
+    showTime = (totalTime/100);
+    Serial.println(showTime);
+    return showTime;
+    }
 }
-
   //--------------------------------------------------------------
 
   //--------------------ÖffneBombe--------------------------------
