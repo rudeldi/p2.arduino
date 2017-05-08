@@ -34,9 +34,9 @@
 #define quizLED4 44
       //--------------------Rätselspiel-------------------------------
 
-unsigned int check_1 = 1; //Variable um Keypad zu aktivieren, 0 = aus
+unsigned int check_1 = 0; //Variable um Keypad zu aktivieren, 0 = aus
 unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
-unsigned int check_3 = 0; //Variable um Station 3 zu aktivieren, 0 = aus
+unsigned int check_3 = 1; //Variable um Station 3 zu aktivieren, 0 = aus
 unsigned int check_4 = 0; //Variable um Station 4 zu aktivieren, 0 = aus
 unsigned int check_5 = 0; //Variable um die Bombe zu öffnen, 0 = zu
 unsigned int countdown = 0;
@@ -70,7 +70,8 @@ Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
   //--------------------Stangenspiel------------------------------
 
 int Startbutton = 0;
-int buttonStateStart;
+int buttonStateRead = 1;
+int buttonStateStart = 0;
 
 int buttonState1;  // Stangenschalter ist auf 1 also eingeschaltet
 int buttonState2;
@@ -105,11 +106,15 @@ bool colourCardRemoved = true; // flag needed to exit for-loop after correct car
 
   //--------------------Rätselspiel-------------------------------
 int quizCounter = 0;
-int quizSequence1[4] = {0, 1, 0, 0}; // define ABCD answers, B
-int quizSequence2[4] = {0, 0, 1, 0}; // C
-int quizSequence3[4] = {1, 0, 0, 0}; // A
-int quizSequence4[4] = {0, 0, 0, 1}; // D
+int quizSequence1[4] = {1, 0, 1, 1}; // define ABCD answers, B
+int quizSequence2[4] = {1, 1, 0, 1}; // C
+int quizSequence3[4] = {0, 1, 1, 1}; // A
+int quizSequence4[4] = {1, 1, 1, 0}; // D
 bool quizButtonWait = true;
+int buttonRead1 = 0;
+int buttonRead2 = 0;
+int buttonRead3 = 0;
+int buttonRead4 = 0;
   //--------------------Rätselspiel-------------------------------
 
   //--------------------Countdown-----------------------------
@@ -152,7 +157,7 @@ void setup() {
   pinMode(buttonPin3, INPUT);
   pinMode(buttonPin4, INPUT);
 
-  pinMode(Startbutton, INPUT);
+  pinMode(Startbutton, INPUT_PULLUP);
 
   //--------------------------------------------------------------
 
@@ -175,10 +180,10 @@ void setup() {
   //--------------------------------------------------------------
 
   //--------------------Rätselspiel-------------------------------
-  pinMode(quizButton1, INPUT);
-  pinMode(quizButton2, INPUT);
-  pinMode(quizButton3, INPUT);
-  pinMode(quizButton4, INPUT);
+  pinMode(quizButton1, INPUT_PULLUP);
+  pinMode(quizButton2, INPUT_PULLUP);
+  pinMode(quizButton3, INPUT_PULLUP);
+  pinMode(quizButton4, INPUT_PULLUP);
   pinMode(quizLED1, OUTPUT);
   pinMode(quizLED2, OUTPUT);
   pinMode(quizLED3, OUTPUT);
@@ -424,12 +429,12 @@ void stangenSpiel() {
   //Zielabfolge: 3 - 1 -2 - 4 - 2
 
 
-  buttonStateStart = analogRead(Startbutton);
+  buttonStateRead = digitalRead(Startbutton);
 
   Serial.println ("Startbutton Status");
   Serial.println (buttonStateStart);
 
-  if (buttonStateStart == 1018) //Startbutton einbauen
+  if (buttonStateRead == 0) //Startbutton einbauen
   {
 
     nothingPressed();
@@ -473,11 +478,11 @@ void stangenSpiel() {
 
     nothingPressed();
 
-    buttonStateStart = 0;
+    buttonStateStart = 1;
   }
 
 
-  else if (buttonStateStart == 0)
+  else if (buttonStateRead == 1)
   {
     nothingPressed();
 
@@ -506,179 +511,181 @@ void stangenSpiel() {
   Serial.println ("Button Status 4");
   Serial.println (buttonState4);
 
-
-  if ((buttonState3 == 0) && (buttonState1 == 1) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 0))  {                            //erstes Kriterium: Button_3 drÃ¼cken
-    Serial.println ("Knopf 3 gedrÃ¼ckt - richtig!");
-    digitalWrite (green3, HIGH);
-    delay(2000);
-    digitalWrite (green3, LOW);
-    a = a + 1;
-  }
-  //--------------------------------------------------------------
-  else if (((buttonState1 == 0) && (a == 0)) || ((buttonState2 == 0) && (a == 0)) || ((buttonState4 == 0) && (a == 0)) ) {            //erstes Kriterium Fehler: Button_1 _2 oder _4 drÃ¼cken
-    for (int i; i < 10; i++)
-    {
-      Serial.println("falsch - erstes Kriterium!");
-
-      falseSequencing();
-
-    }
-    a = 0;
-  }
-
-  //--------------------------------------------------------------
-
-  else                              //erstes Kriterium: nichts gedrÃ¼ckt
-  {
-    nothingPressed();
-  }
-
-  //--------------------------------------------------------------
-
-  if (((buttonState3 == 1) && (buttonState1 == 0) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 1))) {
-    Serial.println("Knopf 1 nach 3 gedrÃ¼ckt - richtig!");
-
-    digitalWrite (green1, HIGH);
-    delay(2000);
-    digitalWrite (green1, LOW);
-
-    a = a + 1; //a ist jetzt 2
-
-  }
-
-  //--------------------------------------------------------------
-
-  else if  (((buttonState2 == 0) && (a == 1)) || ((buttonState4 == 0) && (a == 1)) || ((buttonState3 == 0) && (a == 1)) )  {
-    for (int i; i < 10; i++)
-    {
-      Serial.println("falsch - zweites Kriterium!");
-
-      falseSequencing();
-
-    }
-    a = 0;
-  }
-
-  else                              //zweites Kriterium: nichts gedrÃ¼ckt
-  {
-    nothingPressed();
-  }
-
-
-  //--------------------------------------------------------------
-
-  if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 0) && (buttonState4 == 1) && (a == 2)) {
-    Serial.println("Knopf 2 nach 1 gedrÃ¼ckt - richtig!");
-
-    digitalWrite (green2, HIGH);
-    delay(2000);
-    digitalWrite (green2, LOW);
-
-    a = a + 1; //a ist jetzt 3
-
-  }
-
-  //--------------------------------------------------------------
-
-  else if  ( ((buttonState3 == 0) && (a == 2)) || ((buttonState4 == 0) && (a == 2)) || ((buttonState1 == 0) && (a == 2)))  {
-    for (int i; i < 10; i++)
-    {
-      Serial.println("falsch - drittes Kriterium!");
-
-      falseSequencing();
-
-    }
-    a = 0;
-  }
-
-  else                              //drittes Kriterium: nichts gedrÃ¼ckt
-  {
-    nothingPressed();
-  }
-
-  //--------------------------------------------------------------
-
-  if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 1) && (buttonState4 == 0) && (a == 3)) {
-    Serial.println("Knopf 4 nach 1 gedrÃ¼ckt - richtig!");
-
-    digitalWrite (green4, HIGH);
-    delay(2000);
-    digitalWrite (green4, LOW);
-
-    a = a + 1; //a ist jetzt 4
-
-  }
-
-  //--------------------------------------------------------------
-
-  else if  (((buttonState1 == 0) && (a == 3)) || ((buttonState3 == 0) && (a == 3)) || ((buttonState2 == 0) && (a == 3)) )  {
-    for (int i; i < 10; i++)
-    {
-      Serial.println("falsch - viertes Kriterium!");
-
-      falseSequencing();
-
-    }
-    a = 0;
-  }
-
-  else                              //viertes Kriterium: nichts gedrÃ¼ckt
-  {
-    nothingPressed();
-  }
-
-  //--------------------------------------------------------------
-
-  if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 0) && (buttonState4 == 1) && (a == 4)) {
-    Serial.println("Knopf 2 nach 4 gedrÃ¼ckt - richtig!");
-
-    digitalWrite (green2, HIGH);
-    delay(2000);
-    digitalWrite (green2, LOW);
-
-    a = a + 1; //a ist jetzt 5
-
-  }
-
-  //--------------------------------------------------------------
-
-  else if  (((buttonState1 == 0) && (a == 4)) || ((buttonState3 == 0) && (a == 4)) || ((buttonState4) && (a == 4)) )  {
-    for (int i; i < 10; i++)
-    {
-      Serial.println("falsch - fÃ¼nftes Kriterium!");
-
-      falseSequencing();
-
-    }
-    a = 0;
-  }
-
-  else                              //fÃ¼nftes Kriterium: nichts gedrÃ¼ckt
-  {
-    nothingPressed();
-  }
-
-  if (a == 5)
-  {
-
-    for (int r = 0; r < 10; r++) {
-
-      digitalWrite (green1, HIGH);
-      digitalWrite (green2, HIGH);
+  if(buttonStateStart == 1){
+    if ((buttonState3 == 0) && (buttonState1 == 1) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 0))  {                            //erstes Kriterium: Button_3 drÃ¼cken
+      Serial.println ("Knopf 3 gedrÃ¼ckt - richtig!");
       digitalWrite (green3, HIGH);
-      digitalWrite (green4, HIGH);
-      delay(100);
-      digitalWrite (green1, LOW);
-      digitalWrite (green2, LOW);
+      delay(2000);
       digitalWrite (green3, LOW);
-      digitalWrite (green4, LOW);
-      delay(100);
+      a = a + 1;
     }
-
-    Serial.println("Spiel gewonnen - CODE lautet ABC123!");
-    delay(10000);
-    a = 0;
-
+    //--------------------------------------------------------------
+    else if (((buttonState1 == 0) && (a == 0)) || ((buttonState2 == 0) && (a == 0)) || ((buttonState4 == 0) && (a == 0)) ) {            //erstes Kriterium Fehler: Button_1 _2 oder _4 drÃ¼cken
+      for (int i; i < 10; i++)
+      {
+        Serial.println("falsch - erstes Kriterium!");
+  
+        falseSequencing();
+  
+      }
+      a = 0;
+    }
+  
+    //--------------------------------------------------------------
+  
+    else                              //erstes Kriterium: nichts gedrÃ¼ckt
+    {
+      nothingPressed();
+    }
+  
+    //--------------------------------------------------------------
+  
+    if ((buttonState3 == 1) && (buttonState1 == 0) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 1)) {
+  
+      Serial.println("Knopf 1 nach 3 gedrÃ¼ckt - richtig!");
+  
+      digitalWrite (green1, HIGH);
+      delay(2000);
+      digitalWrite (green1, LOW);
+  
+      a = a + 1; //a ist jetzt 2
+  
+    }
+  
+    //--------------------------------------------------------------
+  
+    else if  (((buttonState2 == 0) && (a == 1)) || ((buttonState4 == 0) && (a == 1)) || ((buttonState3 == 0) && (a == 1)) )  {
+      for (int i; i < 10; i++)
+      {
+        Serial.println("falsch - zweites Kriterium!");
+  
+        falseSequencing();
+  
+      }
+      a = 0;
+    }
+  
+    else                              //zweites Kriterium: nichts gedrÃ¼ckt
+    {
+      nothingPressed();
+    }
+  
+  
+    //--------------------------------------------------------------
+  
+    if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 0) && (buttonState4 == 1) && (a == 2)) {
+      Serial.println("Knopf 2 nach 1 gedrÃ¼ckt - richtig!");
+  
+      digitalWrite (green2, HIGH);
+      delay(2000);
+      digitalWrite (green2, LOW);
+  
+      a = a + 1; //a ist jetzt 3
+  
+    }
+  
+    //--------------------------------------------------------------
+  
+    else if  ( ((buttonState3 == 0) && (a == 2)) || ((buttonState4 == 0) && (a == 2)) || ((buttonState1 == 0) && (a == 2)))  {
+      for (int i; i < 10; i++)
+      {
+        Serial.println("falsch - drittes Kriterium!");
+  
+        falseSequencing();
+  
+      }
+      a = 0;
+    }
+  
+    else                              //drittes Kriterium: nichts gedrÃ¼ckt
+    {
+      nothingPressed();
+    }
+  
+    //--------------------------------------------------------------
+  
+    if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 1) && (buttonState4 == 0) && (a == 3)) {
+      Serial.println("Knopf 4 nach 1 gedrÃ¼ckt - richtig!");
+  
+      digitalWrite (green4, HIGH);
+      delay(2000);
+      digitalWrite (green4, LOW);
+  
+      a = a + 1; //a ist jetzt 4
+  
+    }
+  
+    //--------------------------------------------------------------
+  
+    else if  (((buttonState1 == 0) && (a == 3)) || ((buttonState3 == 0) && (a == 3)) || ((buttonState2 == 0) && (a == 3)) )  {
+      for (int i; i < 10; i++)
+      {
+        Serial.println("falsch - viertes Kriterium!");
+  
+        falseSequencing();
+  
+      }
+      a = 0;
+    }
+  
+    else                              //viertes Kriterium: nichts gedrÃ¼ckt
+    {
+      nothingPressed();
+    }
+  
+    //--------------------------------------------------------------
+  
+    if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 0) && (buttonState4 == 1) && (a == 4)) {
+      Serial.println("Knopf 2 nach 4 gedrÃ¼ckt - richtig!");
+  
+      digitalWrite (green2, HIGH);
+      delay(2000);
+      digitalWrite (green2, LOW);
+  
+      a = a + 1; //a ist jetzt 5
+  
+    }
+  
+    //--------------------------------------------------------------
+  
+    else if  (((buttonState1 == 0) && (a == 4)) || ((buttonState3 == 0) && (a == 4)) || ((buttonState4) && (a == 4)) )  {
+      for (int i; i < 10; i++)
+      {
+        Serial.println("falsch - fÃ¼nftes Kriterium!");
+  
+        falseSequencing();
+  
+      }
+      a = 0;
+    }
+  
+    else                              //fÃ¼nftes Kriterium: nichts gedrÃ¼ckt
+    {
+      nothingPressed();
+    }
+  
+    if (a == 5)
+    {
+      buttonStateStart = 0;
+      for (int r = 0; r < 10; r++) {
+  
+        digitalWrite (green1, HIGH);
+        digitalWrite (green2, HIGH);
+        digitalWrite (green3, HIGH);
+        digitalWrite (green4, HIGH);
+        delay(100);
+        digitalWrite (green1, LOW);
+        digitalWrite (green2, LOW);
+        digitalWrite (green3, LOW);
+        digitalWrite (green4, LOW);
+        delay(100);
+      }
+  
+      Serial.println("Spiel gewonnen - CODE lautet ABC123!");
+      delay(10000);
+      a = 0;
+  
+    }
   }
 
 }
@@ -716,6 +723,12 @@ void nothingPressed() {
   //--------------------Rätselspiel-------------------------------
 
 void raetselSpiel(){
+  buttonRead1 = digitalRead(quizButton1);
+  buttonRead2 = digitalRead(quizButton2);
+  buttonRead3 = digitalRead(quizButton3);
+  buttonRead4 = digitalRead(quizButton4);
+  delay(100);
+  
   switch (quizCounter){ // progress bar
     case 0:
       digitalWrite(quizLED1, LOW);
@@ -727,52 +740,63 @@ void raetselSpiel(){
       digitalWrite(quizLED1, HIGH);
       break;
     case 2:
+      digitalWrite(quizLED1, HIGH);
       digitalWrite(quizLED2, HIGH);
       break;
     case 3:
+      digitalWrite(quizLED1, HIGH);
+      digitalWrite(quizLED2, HIGH);
       digitalWrite(quizLED3, HIGH);
       break;
     case 4:
+      digitalWrite(quizLED1, HIGH);
+      digitalWrite(quizLED2, HIGH);
+      digitalWrite(quizLED3, HIGH);
       digitalWrite(quizLED4, HIGH);
       break;
   }
   
-  if(quizButtonWait && (quizButton1 || quizButton2 || quizButton3 || quizButton4)){ // Ready to enter loop as long as no buttons are pressed
-    if(quizCounter == 0 && quizButton1 == quizSequence1[0] && quizButton2 == quizSequence1[1] && quizButton3 == quizSequence1[2] && quizButton4 == quizSequence1[3]){
-      quizCounter = 1;
-      quizButtonWait = false;
-    }
-    else if(quizCounter == 1 && quizButton1 == quizSequence2[0] && quizButton2 == quizSequence2[1] && quizButton3 == quizSequence2[2] && quizButton4 == quizSequence2[3]){
-      quizCounter = 2;
-      quizButtonWait = false; 
-    }
-    else if(quizCounter == 2 && quizButton1 == quizSequence3[0] && quizButton2 == quizSequence3[1] && quizButton3 == quizSequence3[2] && quizButton4 == quizSequence3[3]){
-      quizCounter = 3;  
-      quizButtonWait = false;
-    }
-    else if(quizCounter == 3 && quizButton1 == quizSequence4[0] && quizButton2 == quizSequence4[1] && quizButton3 == quizSequence4[2] && quizButton4 == quizSequence4[3]){
-      quizCounter = 4;
-      quizButtonWait = false;
-    }
-    else{
-      quizCounter = 0; // Here we start over
-      for(int i=0; i<3; i++){
-        digitalWrite(quizLED1, LOW);
-        digitalWrite(quizLED2, LOW);
-        digitalWrite(quizLED3, LOW);
-        digitalWrite(quizLED4, LOW);
-        delay(300);
-        digitalWrite(quizLED1, HIGH);
-        digitalWrite(quizLED2, HIGH);
-        digitalWrite(quizLED3, HIGH);
-        digitalWrite(quizLED4, HIGH); 
-        delay(300); 
-        quizButtonWait = false;    
+  if(buttonRead1 == 1 && buttonRead2 == 1 && buttonRead3 == 1 && buttonRead4 == 1){
+    quizButtonWait = true; // Once all buttons are released, it is ready to enter the loop again.
+  }
+  else{
+    quizButtonWait = false;
+  }
+    
+  if(quizCounter != 4){  // prevents from entering loop once this station is solved
+    if(quizButtonWait && (buttonRead1 == 0 || buttonRead2 == 0 || buttonRead3 == 0 || buttonRead4 == 0)){ // Ready to enter loop as long as no buttons are pressed
+      if(quizCounter == 0 && buttonRead1 == quizSequence1[0] && buttonRead2 == quizSequence1[1] && buttonRead3 == quizSequence1[2] && buttonRead4 == quizSequence1[3]){
+        quizCounter = 1;
+        quizButtonWait = false;
       }
-    }
-
-    if(!quizButton1 && !quizButton2 && !quizButton3 && !quizButton4){
-      quizButtonWait = true; // Once all buttons are released, it is ready to enter the loop again.
+      else if(quizCounter == 1 && buttonRead1 == quizSequence2[0] && buttonRead2 == quizSequence2[1] && buttonRead3 == quizSequence2[2] && buttonRead4 == quizSequence2[3]){
+        quizCounter = 2;
+        quizButtonWait = false; 
+      }
+      else if(quizCounter == 2 && buttonRead1 == quizSequence3[0] && buttonRead2 == quizSequence3[1] && buttonRead3 == quizSequence3[2] && buttonRead4 == quizSequence3[3]){
+        quizCounter = 3;  
+        quizButtonWait = false;
+      }
+      else if(quizCounter == 3 && buttonRead1 == quizSequence4[0] && buttonRead2 == quizSequence4[1] && buttonRead3 == quizSequence4[2] && buttonRead4 == quizSequence4[3]){
+        quizCounter = 4;
+        quizButtonWait = false;
+      }
+      else{
+        //quizCounter = 0; // Here we start over
+        for(int i=0; i<3; i++){
+          digitalWrite(quizLED1, HIGH);
+          digitalWrite(quizLED2, HIGH);
+          digitalWrite(quizLED3, HIGH);
+          digitalWrite(quizLED4, HIGH); 
+          delay(300); 
+          digitalWrite(quizLED1, LOW);
+          digitalWrite(quizLED2, LOW);
+          digitalWrite(quizLED3, LOW);
+          digitalWrite(quizLED4, LOW);
+          delay(300);
+          quizButtonWait = false;    
+        }
+      }
     }
   }
 }
