@@ -16,12 +16,12 @@
 #define S2 29
 #define S3 30
 #define sensorOut A2
-#define rLED 31
-#define gLED 32
-#define triggerLED 33
-#define progressLED1 34
-#define progressLED2 35
-#define progressLED3 36
+#define rLED 34
+#define gLED 35
+
+#define progressLED1 31
+#define progressLED2 32
+#define progressLED3 33
       //--------------------Station colourCards------------------------------
       //--------------------Rätselspiel-------------------------------
 #define quizButton1 37
@@ -169,14 +169,14 @@ void setup() {
   pinMode(sensorOut, INPUT);
   pinMode(rLED, OUTPUT);
   pinMode(gLED, OUTPUT);
-  pinMode(triggerLED, OUTPUT);
+  
   // Setting frequency scaling to 20%
   digitalWrite(S0, HIGH);
   digitalWrite(S1, LOW);
   // Setting starting values for LEDs
   digitalWrite(rLED, HIGH);
   digitalWrite(gLED, LOW);
-  digitalWrite(triggerLED, HIGH);
+  
   //--------------------------------------------------------------
 
   //--------------------Rätselspiel-------------------------------
