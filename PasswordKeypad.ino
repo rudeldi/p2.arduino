@@ -70,7 +70,7 @@ Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
   //--------------------Stangenspiel------------------------------
 
-int Startbutton = 0;
+int Startbutton = 55;
 int buttonStateRead = 1;
 int buttonStateStart = 0;
 
@@ -437,7 +437,7 @@ void stangenSpiel() {
   Serial.println ("Startbutton Status");
   Serial.println (buttonStateStart);
 
-  if (buttonStateRead == 0) //Startbutton einbauen
+  if (buttonStateRead == 1) //Startbutton einbauen
   {
 
     nothingPressed();
