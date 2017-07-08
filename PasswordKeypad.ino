@@ -35,8 +35,8 @@
 #define quizLED4 44
       //--------------------Rätselspiel-------------------------------
 
-unsigned int check_1 = 1; //Variable um Keypad zu aktivieren, 0 = aus
-unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
+unsigned int check_1 = 0; //Variable um Keypad zu aktivieren, 0 = aus
+unsigned int check_2 = 1; //Variable um Stangenspiel zu aktivieren, 0 = aus
 unsigned int check_3 = 0; //Variable um Raetselspiel zu aktivieren, 0 = aus
 unsigned int check_4 = 0; //Variable um Colourcards zu aktivieren, 0 = aus
 unsigned int check_5 = 0; //Variable um die Bombe zu öffnen, 0 = zu
@@ -70,7 +70,7 @@ Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
   //--------------------Stangenspiel------------------------------
 
-int Startbutton = 55;
+int Startbutton = 54;
 int buttonStateRead = 1;
 int buttonStateStart = 0;
 
@@ -80,13 +80,13 @@ int buttonState3;
 int buttonState4;
 
 int red1 =  15;
-int red2 =  16;
-int red3 =  17;
-int red4 =  18;
+int red2 =  17;
+int red3 =  19;
+int red4 =  21;
 
-int green1 =  19;
-int green2 =  20;
-int green3 =  21;
+int green1 =  16;
+int green2 =  18;
+int green3 =  20;
 int green4 =  22;
 
 int buttonPin1 = 23;
@@ -158,7 +158,7 @@ void setup() {
   pinMode(buttonPin3, INPUT);
   pinMode(buttonPin4, INPUT);
 
-  pinMode(Startbutton, INPUT_PULLUP);
+  pinMode(Startbutton, INPUT);
 
   //--------------------------------------------------------------
 
@@ -433,11 +433,12 @@ void stangenSpiel() {
 
 
   buttonStateRead = digitalRead(Startbutton);
+  Serial.println(digitalRead(Startbutton));
 
   Serial.println ("Startbutton Status");
   Serial.println (buttonStateStart);
 
-  if (buttonStateRead == 1) //Startbutton einbauen
+  if (buttonStateRead == 0) //Startbutton einbauen
   {
 
     nothingPressed();
