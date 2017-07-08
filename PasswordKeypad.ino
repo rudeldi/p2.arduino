@@ -4,6 +4,8 @@
     V0.2.1  5.4.2017  Keypad fixed
     V0.3    19.4.2017 Games added
     V0.3.1  19.4.2017 Countdown added
+    V0.4    16.6.2017 Checkpoints in Functions added
+
 */
 #include <Keypad.h>
 #include <LiquidCrystal.h>
@@ -34,12 +36,12 @@
 #define quizLED4 44
       //--------------------Rätselspiel-------------------------------
 
-unsigned int check_1 = 1; //Variable um Keypad zu aktivieren, 0 = aus
-unsigned int check_2 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
-unsigned int check_3 = 0; //Variable um Station 3 zu aktivieren, 0 = aus
-unsigned int check_4 = 0; //Variable um Station 4 zu aktivieren, 0 = aus
+unsigned int check_1 = 0; //Variable um Keypad zu aktivieren, 0 = aus
+unsigned int check_2 = 1; //Variable um Stangenspiel zu aktivieren, 0 = aus
+unsigned int check_3 = 0; //Variable um Raetselspiel zu aktivieren, 0 = aus
+unsigned int check_4 = 0; //Variable um Colourcards zu aktivieren, 0 = aus
 unsigned int check_5 = 0; //Variable um die Bombe zu öffnen, 0 = zu
-unsigned int countdown = 0;
+unsigned int countdown = 0; //Vriable um den Countdown zu starten
 
 LiquidCrystal lcd(14, 13, 12, 11, 10, 9); // Creates lcd object
 
@@ -69,7 +71,7 @@ Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
   //--------------------Stangenspiel------------------------------
 
-int Startbutton = 0;
+int Startbutton = 54;
 int buttonStateRead = 1;
 int buttonStateStart = 0;
 
@@ -79,13 +81,13 @@ int buttonState3;
 int buttonState4;
 
 int red1 =  15;
-int red2 =  16;
-int red3 =  17;
-int red4 =  18;
+int red2 =  17;
+int red3 =  19;
+int red4 =  21;
 
-int green1 =  19;
-int green2 =  20;
-int green3 =  21;
+int green1 =  16;
+int green2 =  18;
+int green3 =  20;
 int green4 =  22;
 
 int buttonPin1 = 23;
@@ -160,7 +162,7 @@ void setup() {
   pinMode(buttonPin3, INPUT);
   pinMode(buttonPin4, INPUT);
 
-  pinMode(Startbutton, INPUT_PULLUP);
+  pinMode(Startbutton, INPUT);
 
   //--------------------------------------------------------------
 
@@ -208,11 +210,11 @@ void setup() {
 
 void loop() {
 
-  if (deciSeconds == 0){
-    Serial.println("Loop is running...");
-    Serial.print("Actual millis is... ");
-    Serial.print(timer);
-  }
+//  if (deciSeconds == 0){
+//    Serial.println("Loop is running...");
+//    Serial.print("Actual millis is... ");
+//    Serial.print(timer);
+//  }
 
   if(countdown){
     sevseg.setNumber(countDown(), 1);
@@ -352,11 +354,16 @@ void LCDcorrect() {
   lcd.print("Unlocked!");
   delay(5000);
   lcd.clear();
+
+  check_1 = 0;
+  check_2 = 1;
+
   lcd.setCursor(3, 0);
   lcd.print("Proceed to");
   lcd.setCursor(3, 1);
   lcd.print("Station 2!");
   delay(5000);
+
 }
 
 void LCDwrong() {
@@ -442,6 +449,7 @@ void stangenSpiel() {
 
 
   buttonStateRead = digitalRead(Startbutton);
+  Serial.println(digitalRead(Startbutton));
 
   Serial.println ("Startbutton Status");
   Serial.println (buttonStateStart);
@@ -695,6 +703,8 @@ void stangenSpiel() {
       check_4 = 0;
       check_5 = 1;
       Serial.println("Spiel gewonnen - CODE lautet ABC123!");
+      check_2 = 0;
+      check_3 = 1;
       delay(10000);
       a = 0;
   
@@ -801,6 +811,8 @@ void raetselSpiel(){
       }
       else if(quizCounter == 3 && buttonRead1 == quizSequence4[0] && buttonRead2 == quizSequence4[1] && buttonRead3 == quizSequence4[2] && buttonRead4 == quizSequence4[3]){
         quizCounter = 4;
+        check_3 = 0;
+        check_4 = 1;
         quizButtonWait = false;
       }
       else{
@@ -980,7 +992,10 @@ void colourCards(){
       check_2 = 0;
       check_3 = 1;
       // visual and/or audio cue
+      check_4 = 0;
+      check_5 = 1;
       // lock this station and unlock next station/prize
+      
     }
     else{ // What happens when the card is inserted in the wrong sequence
       colourCardCounter = 0; // here we start over
