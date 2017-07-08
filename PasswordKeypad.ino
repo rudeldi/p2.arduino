@@ -3,8 +3,9 @@
     V0.2    1.4.2017  Stangenspiel
     V0.2.1  5.4.2017  Keypad fixed
     V0.3    19.4.2017 Games added
-    V0.3.1  19.4.2017 Countdown addad
+    V0.3.1  19.4.2017 Countdown added
     V0.4    16.6.2017 Checkpoints in Functions added
+
 */
 #include <Keypad.h>
 #include <LiquidCrystal.h>
@@ -135,6 +136,9 @@ void setup() {
 
   lcd.begin(16, 2);                     // Activates 16 x 2 lcd
   LCDwelcomeScreen();
+  if (check_1 == 0) {
+    LCDsolved();  
+  }
 
   //---------------------Keypad-----------------------------------
 
@@ -167,6 +171,9 @@ void setup() {
   pinMode(S1, OUTPUT);
   pinMode(S2, OUTPUT);
   pinMode(S3, OUTPUT);
+  pinMode(progressLED1, OUTPUT);
+  pinMode(progressLED2, OUTPUT);
+  pinMode(progressLED3, OUTPUT);
   pinMode(sensorOut, INPUT);
   pinMode(rLED, OUTPUT);
   pinMode(gLED, OUTPUT);
@@ -219,7 +226,7 @@ void loop() {
   }
 
   if (check_2) {
-    stangenSpiel();
+    colourCards();
   }
 
   if (check_3) {
@@ -227,7 +234,7 @@ void loop() {
   }
 
   if (check_4) {
-    colourCards();
+    stangenSpiel();
   }
 
   if (check_5) {
@@ -258,6 +265,7 @@ void keypadEvent(KeypadEvent key) {
             resetKeypad();
             check_1 = 0;
             check_2 = 1;
+            LCDsolved();
             break;
           }
           if (keyword_in != keyword_set) {
@@ -300,7 +308,7 @@ void LCDwelcomeScreen() {
   lcd.clear();
   lcd.setCursor(0, 0);          // (pos, row) starting with 0
   lcd.print("Enter Serial Nr:");
-  lcd.setCursor(2, 1);
+  lcd.setCursor(3, 1);
   lcd.print("===MCBS===");
 }
 
@@ -346,17 +354,16 @@ void LCDcorrect() {
   lcd.print("Unlocked!");
   delay(5000);
   lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Proceed to Station 2");
-  lcd.setCursor(6, 1);
-  lcd.print("on your right!");
-  delay(2000);
+
   check_1 = 0;
   check_2 = 1;
-  for (int cursorPos = 0; cursorPos < 100; cursorPos++) {
-    lcd.scrollDisplayLeft();
-    delay(300);
-  }
+
+  lcd.setCursor(3, 0);
+  lcd.print("Proceed to");
+  lcd.setCursor(3, 1);
+  lcd.print("Station 2!");
+  delay(5000);
+
 }
 
 void LCDwrong() {
@@ -390,6 +397,14 @@ void LCDmoreNumbers() {
   lcd.setCursor(2, 1);
   lcd.print("More Digits!");
   delay(2000);
+}
+
+void LCDsolved() {
+  lcd.clear();
+  lcd.setCursor(4, 0);
+  lcd.print("Station");
+  lcd.setCursor(4, 1);
+  lcd.print("Solved!");  
 }
 
   //--------------------Keypad LCD--------------------------------
@@ -427,7 +442,8 @@ void resetKeypad() {
   zaehler = 0;
   Serial.println(keyword_in);
 }
-
+  //--------------------Keypad LCD--------------------------------
+  
 void stangenSpiel() {
   //Zielabfolge: 3 - 1 -2 - 4 - 2
 
@@ -684,7 +700,8 @@ void stangenSpiel() {
         digitalWrite (green4, LOW);
         delay(100);
       }
-  
+      check_4 = 0;
+      check_5 = 1;
       Serial.println("Spiel gewonnen - CODE lautet ABC123!");
       check_2 = 0;
       check_3 = 1;
@@ -729,10 +746,23 @@ void nothingPressed() {
   //--------------------Rätselspiel-------------------------------
 
 void raetselSpiel(){
+  Serial.println("raetselSpiel() aktiviert");
   buttonRead1 = digitalRead(quizButton1);
   buttonRead2 = digitalRead(quizButton2);
   buttonRead3 = digitalRead(quizButton3);
   buttonRead4 = digitalRead(quizButton4);
+  Serial.print("buttonRead1: ");
+  Serial.println(buttonRead1);
+  Serial.print("buttonRead2: ");
+  Serial.println(buttonRead2);
+  Serial.print("buttonRead3: ");
+  Serial.println(buttonRead3);
+  Serial.print("buttonRead4: ");
+  Serial.println(buttonRead4);
+  Serial.print("quizButtonWait: ");
+  Serial.println(quizButtonWait);
+  Serial.print("quizCounter: ");
+  Serial.println(quizCounter);
   delay(100);
   
   switch (quizCounter){ // progress bar
@@ -759,15 +789,11 @@ void raetselSpiel(){
       digitalWrite(quizLED2, HIGH);
       digitalWrite(quizLED3, HIGH);
       digitalWrite(quizLED4, HIGH);
+      check_3 = 0;
+      check_4 = 1;
       break;
   }
   
-  if(buttonRead1 == 1 && buttonRead2 == 1 && buttonRead3 == 1 && buttonRead4 == 1){
-    quizButtonWait = true; // Once all buttons are released, it is ready to enter the loop again.
-  }
-  else{
-    quizButtonWait = false;
-  }
     
   if(quizCounter != 4){  // prevents from entering loop once this station is solved
     if(quizButtonWait && (buttonRead1 == 0 || buttonRead2 == 0 || buttonRead3 == 0 || buttonRead4 == 0)){ // Ready to enter loop as long as no buttons are pressed
@@ -807,12 +833,24 @@ void raetselSpiel(){
       }
     }
   }
+
+  if(buttonRead1 == 1 && buttonRead2 == 1 && buttonRead3 == 1 && buttonRead4 == 1){
+    quizButtonWait = true; // Once all buttons are released, it is ready to enter the loop again.
+  }
+  else{
+    quizButtonWait = false;
+  }
 }
 
   //--------------------ColourCards-------------------------------
 bool colourCardRed(){
-  // (255, 0, 0)
-  if(red < green && red < blue && green > blue && red < 20){
+  int r = 980;
+  int g = 1290;
+  int b = 1000;
+  int tol = 200;
+  if((red >= (r-tol)) && (red <= (r+tol)) && (green >= (g-tol))
+    && (green <= (g+tol)) && (blue >= (b-tol)) && (blue <= (b+tol))){
+    Serial.println("Red!");
     return true;
   }
   else{
@@ -821,8 +859,13 @@ bool colourCardRed(){
 }
 
 bool colourCardYellow(){
-  // (255, 255, 0)
-  if(abs(blue-green) < 30 && red < blue && green < blue && green < 50){
+  int r = 780;
+  int g = 570;
+  int b = 955;
+  int tol = 200;
+  if((red >= (r-tol)) && (red <= (r+tol)) && (green >= (g-tol))
+    && (green <= (g+tol)) && (blue >= (b-tol)) && (blue <= (b+tol))){
+    Serial.println("Yellow!");
     return true;
   }
   else{
@@ -831,8 +874,13 @@ bool colourCardYellow(){
 }
 
 bool colourCardBlue(){
-  //(0, 0, 255)
-  if(red + green + blue > 60 && blue < red && red > green){
+  int r = 1330;
+  int g = 1060;
+  int b = 995;
+  int tol = 200;
+  if((red >= (r-tol)) && (red <= (r+tol)) && (green >= (g-tol))
+    && (green <= (g+tol)) && (blue >= (b-tol)) && (blue <= (b+tol))){
+    Serial.println("Blue!");
     return true;
   }
   else{
@@ -841,11 +889,16 @@ bool colourCardBlue(){
 }
 
 bool colourCardIn(){ // testing to see if card is in the slot with green triggerLED
-  //(0, 255, 0)
-  if(red + green + blue < 40 && red > green && red > blue){
+  int r = 63;
+  int g = 50;
+  int b = 50;
+  int tol = 50;
+  if((red >= (r-tol)) && (red <= (r+tol)) && (green >= (g-tol))
+    && (green <= (g+tol)) && (blue >= (b-tol)) && (blue <= (b+tol))){
     colourCardRemoved = true; // when card is removed, the loop is ready for testing again
     digitalWrite(rLED, HIGH);
     digitalWrite(gLED, LOW);
+    Serial.println("Card slot empty!");
     return false;
   }
   else{
@@ -927,7 +980,7 @@ void colourCards(){
       Serial.println("Card is Yellow!");
     }
     else if(colourCardCounter == 2 && colourCardBlue() && !colourCardYellow() && !colourCardRed()){
-      // UNLOCKED!
+      // COLOURUNLOCKED!
       colourCardCounter = 3;
       digitalWrite(rLED, LOW);
       digitalWrite(gLED, HIGH);
@@ -936,6 +989,8 @@ void colourCards(){
       // Shut down colour sensor
       digitalWrite(S0, LOW);
       digitalWrite(S1, LOW);
+      check_2 = 0;
+      check_3 = 1;
       // visual and/or audio cue
       check_4 = 0;
       check_5 = 1;
