@@ -14,7 +14,7 @@
 #include <LiquidCrystal.h>
 #include "SevSeg.h"
 
-
+csdvxcv
 
 #define SoftwareVersion "201708131850"  // IMMER AKTUALISIEREN YYYYMMDDHHMM
 
