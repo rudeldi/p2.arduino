@@ -449,8 +449,9 @@ void resetKeypad() {
 void stangenspielEvent(KeypadEvent folge) {
   switch (keypad2.getState()) {
     case PRESSED:
-      if (folge == 'X') {
+      if (folge) { // == 'X'
         startbutton_pressed = 1;
+        Serial.println(folge);
         break;
       }
 
