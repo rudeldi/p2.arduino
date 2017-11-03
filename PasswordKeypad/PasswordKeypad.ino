@@ -15,6 +15,7 @@
 #include <LiquidCrystal.h>
 #include "SevSeg.h"
 
+
 #define SoftwareVersion "2017102111305"  // IMMER AKTUALISIEREN YYYYMMDDHHMM
 
 #define _myArray_cnt 8 //Array Groesse Keypad
