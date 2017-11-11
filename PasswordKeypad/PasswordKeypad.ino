@@ -10,13 +10,14 @@
     V0.5.1  13.08.2017 Überarbeitung Stangenspiel, Änderung der Buttoninputs mit internem Pullup
     V0.5.2  20.10.1017 Änderung des define sensorOut von A2 in Arduino Pin 56/ Verifikation ausstehend!
     V0.6    21.10.2017 Neuprogrammierung Stangenspiel, Umbenennung Keypad in Keypad1
+    V0.7    06.11.1017 Änderung des Stangenspiels in Matrix, Hinzufügen der Kontrollstrukturen, Setzen des Checkpoints ausstehend!! Z475
 */
 #include <Keypad.h>
 #include <LiquidCrystal.h>
 #include "SevSeg.h"
 
 
-#define SoftwareVersion "2017102111305"  // IMMER AKTUALISIEREN YYYYMMDDHHMM
+#define SoftwareVersion "201711061750"  // IMMER AKTUALISIEREN YYYYMMDDHHMM
 
 #define _myArray_cnt 8 //Array Groesse Keypad
 #define _myArray_cnt2 5 //Array Groesse Stangenspiel
@@ -50,7 +51,7 @@ unsigned int check_2 = 0; //Variable um Colourcards zu aktivieren, 0 = aus
 unsigned int check_3 = 0; //Variable um Raetselspiel zu aktivieren, 0 = aus
 unsigned int check_4 = 1; //Variable um Stangenspiel zu aktivieren, 0 = aus
 unsigned int check_5 = 0; //Variable um die Bombe zu öffnen, 0 = zu
-unsigned int countdown = 1; //Vriable um den Countdown zu starten
+unsigned int countdown = 0; //Vriable um den Countdown zu starten
 
 LiquidCrystal lcd(14, 13, 12, 11, 10, 9); // Creates lcd object
 
@@ -449,25 +450,32 @@ void resetKeypad() {
 void stangenspielEvent(KeypadEvent folge) {
   switch (keypad2.getState()) {
     case PRESSED:
-      if (folge) { // == 'X'
-        startbutton_pressed = 1;
+      if (folge == 'X') { // == 'X' Spiel intitialisieren
+        //startbutton_pressed = 1;
+        if (zaehler2 == 0){
+          zaehler2 +=1;
+        }
         Serial.println(folge);
         break;
       }
 
-      if (folge != 'X' and startbutton_pressed == 1) {
-        if (folge_in[zaehler2] == folge_set[zaehler2]) {
-        }
-
-        if (folge_in != folge_set) {
-          Serial.println("Your Code is WRONG");
-          resetKeypad();
-
-          break; // need to reset zaehler to 0
-        }
+      if (folge != folge_set[zaehler2]){ //zurücksetzen bei Fehler
+        falseSequencing();
+        falseSequencing();
+        resetStangenspiel();
       }
 
+      if (folge == folge_set[zaehler2]){ //Gezogene Stange ist korrekt
+        folge_in[zaehler2] = folge;
+        zaehler2 += 1;
+      }
 
+      if (zaehler == 6){
+        correctSequencing();
+        correctSequencing();
+        //counterXYXYXYXYXYXYXYXYXY
+      }
+      
     case RELEASED:
       if (folge == ' ') {
       }
