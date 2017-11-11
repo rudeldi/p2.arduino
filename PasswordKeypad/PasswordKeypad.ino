@@ -11,13 +11,14 @@
     V0.5.2  20.10.1017 Änderung des define sensorOut von A2 in Arduino Pin 56/ Verifikation ausstehend!
     V0.6    21.10.2017 Neuprogrammierung Stangenspiel, Umbenennung Keypad in Keypad1
     V0.7    06.11.1017 Änderung des Stangenspiels in Matrix, Hinzufügen der Kontrollstrukturen, Setzen des Checkpoints ausstehend!! Z475
+    V0.7.1  11.11.2017 Änderung der Deklaration der LEDs des Stangenspiels, LED Feedback hinzugefügt
 */
 #include <Keypad.h>
 #include <LiquidCrystal.h>
 #include "SevSeg.h"
 
 
-#define SoftwareVersion "201711061750"  // IMMER AKTUALISIEREN YYYYMMDDHHMM
+#define SoftwareVersion "201711111823"  // IMMER AKTUALISIEREN YYYYMMDDHHMM
 
 #define _myArray_cnt 8 //Array Groesse Keypad
 #define _myArray_cnt2 5 //Array Groesse Stangenspiel
@@ -99,15 +100,9 @@ int zaehler2 = 0;
 //int startButton = 53;
 int startbutton_pressed = 0;
 
-int red1 =  15;
-int red2 =  17;
-int red3 =  19;
-int red4 =  20;
-
-int green1 =  16;
-int green2 =  18;
-int green3 =  21;
-int green4 =  22;
+int redleds[4] = {15, 17, 19, 21};
+int greenleds[4] = {16, 18, 20, 22};
+int intfolge_set[5] = {3, 1, 2, 4, 2};
 
 //--------------------------------------------------------------
 
@@ -160,16 +155,10 @@ void setup() {
   keypad2.addEventListener(stangenspielEvent); //Add Event Listener fuer Stangenspiel
 
   //--------------------Stangenspiel------------------------------
-
-  pinMode(red1, OUTPUT);
-  pinMode(red2, OUTPUT);
-  pinMode(red3, OUTPUT);
-  pinMode(red4, OUTPUT);
-
-  pinMode(green1, OUTPUT);
-  pinMode(green2, OUTPUT);
-  pinMode(green3, OUTPUT);
-  pinMode(green4, OUTPUT);
+  for(int i = 0; i <= 3; i++){
+    pinMode(redleds[i], OUTPUT);
+    pinMode(greenleds[i], OUTPUT);
+  }
 
   //pinMode(startButton, INPUT_PULLUP);
 
@@ -450,29 +439,29 @@ void resetKeypad() {
 void stangenspielEvent(KeypadEvent folge) {
   switch (keypad2.getState()) {
     case PRESSED:
-      if (folge == 'X') { // == 'X' Spiel intitialisieren
+      if (folge == 'X' and zaehler2 == 0) { // == 'X' Spiel intitialisieren
+        zeigeFolge();
         //startbutton_pressed = 1;
         if (zaehler2 == 0){
           zaehler2 +=1;
         }
-        Serial.println(folge);
         break;
       }
 
-      if (folge != folge_set[zaehler2]){ //zurücksetzen bei Fehler
-        falseSequencing();
-        falseSequencing();
+      if (folge == folge_set[(zaehler2)-1] and zaehler2 >= 1){ //Gezogene Stange ist korrekt
+        folge_in[(zaehler2)-1] = folge;
+        Serial.println("Marker1");
+        Serial.println(folge_in[(zaehler2)-1]);
+        correctSequencing((int(folge)-49));
+        zaehler2 += 1;
+      }
+      else {//(folge != folge_set[(zaehler2)-1] and zaehler2 >= 1){ //zurücksetzen bei Fehler
+        falseSequencing(int(folge)-49);
         resetStangenspiel();
       }
 
-      if (folge == folge_set[zaehler2]){ //Gezogene Stange ist korrekt
-        folge_in[zaehler2] = folge;
-        zaehler2 += 1;
-      }
-
       if (zaehler == 6){
-        correctSequencing();
-        correctSequencing();
+        //correctSequencing(int(folge));
         //counterXYXYXYXYXYXYXYXYXY
       }
       
@@ -500,48 +489,35 @@ void stangenSpiel() {
   }
 }
 
-void falseSequencing() {
+void falseSequencing(int A) {
 
-  digitalWrite (red1, HIGH);
-  digitalWrite (red2, HIGH);
-  digitalWrite (red3, HIGH);
-  digitalWrite (red4, HIGH);
-  delay(100);
-  digitalWrite (red1, LOW);
-  digitalWrite (red2, LOW);
-  digitalWrite (red3, LOW);
-  digitalWrite (red4, LOW);
-  delay(100);
+  for (int i = 0; i <= 4; i++){
+    digitalWrite(redleds[A], HIGH);
+    delay(300);
+    digitalWrite(redleds[A], LOW);
+    delay(100);
+  }
 
 }
 
-void correctSequencing() {
-
-  digitalWrite (green1, HIGH);
-  digitalWrite (green2, HIGH);
-  digitalWrite (green3, HIGH);
-  digitalWrite (green4, HIGH);
-  delay(100);
-  digitalWrite (green1, LOW);
-  digitalWrite (green2, LOW);
-  digitalWrite (green3, LOW);
-  digitalWrite (green4, LOW);
-  delay(100);
+void correctSequencing(int A) {
+  
+  for (int i = 0; i <= 4; i++){
+    digitalWrite(greenleds[A], HIGH);
+    delay(300);
+    digitalWrite(greenleds[A], LOW);
+    delay(100);
+  }
 }
 
-void nothingPressed() {
-
-  digitalWrite (green1, LOW);
-  digitalWrite (green2, LOW);
-  digitalWrite (green3, LOW);
-  digitalWrite (green4, LOW);
-
-  digitalWrite (red1, LOW);
-  digitalWrite (red2, LOW);
-  digitalWrite (red3, LOW);
-  digitalWrite (red4, LOW);
+void zeigeFolge() {
+  for (int i = 0; i <= 4; i++){
+    digitalWrite(greenleds[intfolge_set[i]-1], HIGH);
+    delay(300);
+    digitalWrite(greenleds[intfolge_set[i]-1], LOW);
+    delay(100);
+  }
 }
-
 void resetStangenspiel() {
   for (unsigned int i = 0; i < _myArray_cnt2; i++) {
     folge_in[i] = ' ';
