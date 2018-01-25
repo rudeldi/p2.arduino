@@ -47,10 +47,10 @@
 #define quizLED4 44
 //--------------------Rätselspiel-------------------------------
 
-unsigned int check_1 = 0; //Variable um Keypad zu aktivieren, 0 = aus
+unsigned int check_1 = 1; //Variable um Keypad zu aktivieren, 0 = aus
 unsigned int check_2 = 0; //Variable um Colourcards zu aktivieren, 0 = aus
 unsigned int check_3 = 0; //Variable um Raetselspiel zu aktivieren, 0 = aus
-unsigned int check_4 = 1; //Variable um Stangenspiel zu aktivieren, 0 = aus
+unsigned int check_4 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
 unsigned int check_5 = 0; //Variable um die Bombe zu öffnen, 0 = zu
 unsigned int countdown = 0; //Vriable um den Countdown zu starten
 
