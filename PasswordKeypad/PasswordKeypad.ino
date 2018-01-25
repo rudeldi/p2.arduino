@@ -8,26 +8,27 @@
     V0.5    11.08.2017 SoftwareVersion als Stamp hinzugefügt, Zeitlayout angepasst
                        correctSequencing Funktion hinzugefügt
     V0.5.1  13.08.2017 Überarbeitung Stangenspiel, Änderung der Buttoninputs mit internem Pullup
-                       
+    V0.5.2  20.10.1017 Änderung des define sensorOut von A2 in Arduino Pin 56/ Verifikation ausstehend!
+    V0.6    21.10.2017 Neuprogrammierung Stangenspiel, Umbenennung Keypad in Keypad1
+    V0.7    06.11.1017 Änderung des Stangenspiels in Matrix, Hinzufügen der Kontrollstrukturen, Setzen des Checkpoints ausstehend!! Z475
+    V0.7.1  11.11.2017 Änderung der Deklaration der LEDs des Stangenspiels, LED Feedback hinzugefügt
 */
 #include <Keypad.h>
 #include <LiquidCrystal.h>
 #include "SevSeg.h"
 
 
+#define SoftwareVersion "201711111823"  // IMMER AKTUALISIEREN YYYYMMDDHHMM
 
-#define SoftwareVersion "201708131850"  // IMMER AKTUALISIEREN YYYYMMDDHHMM
+#define _myArray_cnt 8 //Array Groesse Keypad
+#define _myArray_cnt2 5 //Array Groesse Stangenspiel
 
-
-
-
-#define _myArray_cnt 8
 //--------------------Station colourCards------------------------------
 #define S0 27
 #define S1 28
 #define S2 29
 #define S3 30
-#define sensorOut A2
+#define sensorOut 56
 #define rLED 34
 #define gLED 35
 
@@ -75,38 +76,34 @@ int zaehler = 0;
 byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
 
-
-
-Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
+Keypad keypad1 = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 //--------------------Stangenspiel------------------------------
 
-int Startbutton = 53;
-int buttonStateRead = 1;
-int buttonStateStart = 0;
+const byte ROWS_s = 1;
+const byte COLS_s = 5;
+
+char stang_keys[ROWS_s][COLS_s] = {
+  {'X', '1', '2', '3', '4'}
+};
+
+byte row_sPins[ROWS_s] = {36};
+byte col_sPins[COLS_s] = {53, 23, 24, 25, 26};
+
+char folge_in[_myArray_cnt2] = {' ', ' ', ' ', ' ', ' '};
+char folge_set[_myArray_cnt2] = {'3', '1', '2', '4', '2'};
+
+Keypad keypad2 = Keypad( makeKeymap(stang_keys), row_sPins, col_sPins, ROWS_s, COLS_s );
+
+int zaehler2 = 0;
+
+//int startButton = 53;
 int startbutton_pressed = 0;
 
-int buttonState1;  // Stangenschalter ist auf 1 also eingeschaltet
-int buttonState2;
-int buttonState3;
-int buttonState4;
+int redleds[4] = {15, 17, 19, 21};
+int greenleds[4] = {16, 18, 20, 22};
+int intfolge_set[5] = {3, 1, 2, 4, 2};
 
-int red1 =  15;
-int red2 =  17;
-int red3 =  19;
-int red4 =  20;
-
-int green1 =  16;
-int green2 =  18;
-int green3 =  21;
-int green4 =  22;
-
-int buttonPin1 = 23;
-int buttonPin2 = 24;
-int buttonPin3 = 25;
-int buttonPin4 = 26;
-
-int a = 1;  // Variable, die sich erhöht, wenn Spieler eine Kombination im Spiel richtig hat
 //--------------------------------------------------------------
 
 //--------------------Station colourCards------------------------------
@@ -154,27 +151,16 @@ void setup() {
 
   //---------------------Keypad-----------------------------------
 
-  keypad.addEventListener(keypadEvent); // Add an event listener for this keypad
-
+  keypad1.addEventListener(keypadEvent); // Add an event listener for this keypad
+  keypad2.addEventListener(stangenspielEvent); //Add Event Listener fuer Stangenspiel
 
   //--------------------Stangenspiel------------------------------
+  for(int i = 0; i <= 3; i++){
+    pinMode(redleds[i], OUTPUT);
+    pinMode(greenleds[i], OUTPUT);
+  }
 
-  pinMode(red1, OUTPUT);
-  pinMode(red2, OUTPUT);
-  pinMode(red3, OUTPUT);
-  pinMode(red4, OUTPUT);
-
-  pinMode(green1, OUTPUT);
-  pinMode(green2, OUTPUT);
-  pinMode(green3, OUTPUT);
-  pinMode(green4, OUTPUT);
-
-  pinMode(buttonPin1, INPUT_PULLUP);
-  pinMode(buttonPin2, INPUT_PULLUP);
-  pinMode(buttonPin3, INPUT_PULLUP);
-  pinMode(buttonPin4, INPUT_PULLUP);
-
-  pinMode(Startbutton, INPUT_PULLUP);
+  //pinMode(startButton, INPUT_PULLUP);
 
   //--------------------------------------------------------------
 
@@ -250,7 +236,7 @@ void loop() {
 
 // Taking care of some special events.
 void keypadEvent(KeypadEvent key) {
-  switch (keypad.getState()) {
+  switch (keypad1.getState()) {
     case PRESSED:
       if (key == '#') {
         if (zaehler > 0) {
@@ -416,7 +402,7 @@ void LCDsolved() {
 //--------------------Keypad LCD--------------------------------
 
 void keyPadcode() {
-  char key = keypad.getKey();
+  char key = keypad1.getKey();
 
   if (key) {
 
@@ -450,324 +436,93 @@ void resetKeypad() {
 }
 //--------------------Keypad LCD--------------------------------
 
+void stangenspielEvent(KeypadEvent folge) {
+  switch (keypad2.getState()) {
+    case PRESSED:
+      if (folge == 'X' and zaehler2 == 0) { // == 'X' Spiel intitialisieren
+        zeigeFolge();
+        //startbutton_pressed = 1;
+        if (zaehler2 == 0){
+          zaehler2 +=1;
+        }
+        break;
+      }
+
+      if (folge == folge_set[(zaehler2)-1] and zaehler2 >= 1){ //Gezogene Stange ist korrekt
+        folge_in[(zaehler2)-1] = folge;
+        Serial.println("Marker1");
+        Serial.println(folge_in[(zaehler2)-1]);
+        correctSequencing((int(folge)-49));
+        zaehler2 += 1;
+      }
+      else {//(folge != folge_set[(zaehler2)-1] and zaehler2 >= 1){ //zurücksetzen bei Fehler
+        falseSequencing(int(folge)-49);
+        resetStangenspiel();
+      }
+
+      if (zaehler == 6){
+        //correctSequencing(int(folge));
+        //counterXYXYXYXYXYXYXYXYXY
+      }
+      
+    case RELEASED:
+      if (folge == ' ') {
+      }
+      break;
+
+    case HOLD:
+      if (folge == ' ') {
+      }
+      break;
+  }
+}
+
 void stangenSpiel() {
   //Zielabfolge: 3 - 1 -2 - 4 - 2
-  do {
-    falseSequencing();
-    correctSequencing();
-    nothingPressed();
-    if (digitalRead(Startbutton) == 0 and startbutton_pressed == 0) {
-      startbutton_pressed = 1;
-      Serial.print("Status Startbutton: ");
-      Serial.println(digitalRead(Startbutton));
-      Serial.println(startbutton_pressed);
+  char folge = keypad2.getKey();
 
-    }
-  } while (startbutton_pressed == 0);
+  if (folge) {
+    Serial.println(folge);
+    Serial.println(folge_set);
+    Serial.println(folge_in);
+    Serial.println(zaehler2);
+  }
+}
 
-  do {
-    correctSequencing();
-    nothingPressed();
-    if (digitalRead(Startbutton) == 1 and startbutton_pressed == 2) {
-      startbutton_pressed = 3;
-      Serial.print("Status startbutton_pressed: ");
-      Serial.println(startbutton_pressed);
-    }
-    
-  } while (startbutton_pressed == 2);
+void falseSequencing(int A) {
 
+  for (int i = 0; i <= 4; i++){
+    digitalWrite(redleds[A], HIGH);
+    delay(300);
+    digitalWrite(redleds[A], LOW);
+    delay(100);
+  }
+
+}
+
+void correctSequencing(int A) {
   
-  if (startbutton_pressed == 1) //Startbutton einbauen
-  {
-
-    nothingPressed();
-
-    digitalWrite (red3, HIGH);
-    digitalWrite (green3, HIGH);
-
-    delay(1500);
-
-    digitalWrite (red3, LOW);
-    digitalWrite (green3, LOW);
-
-    digitalWrite (red1, HIGH);
-    digitalWrite (green1, HIGH);
-
-    delay(1500);
-
-    digitalWrite (red1, LOW);
-    digitalWrite (green1, LOW);
-
-    digitalWrite (red2, HIGH);
-    digitalWrite (green2, HIGH);
-
-    delay(1500);
-
-    digitalWrite (red2, LOW);
-    digitalWrite (green2, LOW);
-
-    digitalWrite (red4, HIGH);
-    digitalWrite (green4, HIGH);
-
-    delay(1500);
-
-    digitalWrite (red4, LOW);
-    digitalWrite (green4, LOW);
-
-    digitalWrite (red2, HIGH);
-    digitalWrite (green2, HIGH);
-
-    delay(1500);
-
-    nothingPressed();
-    startbutton_pressed += 1;
-    Serial.println(startbutton_pressed);
-
+  for (int i = 0; i <= 4; i++){
+    digitalWrite(greenleds[A], HIGH);
+    delay(300);
+    digitalWrite(greenleds[A], LOW);
+    delay(100);
   }
-
-
-  if (startbutton_pressed == 3)
-  {
-    nothingPressed();
-
-    buttonState1 = digitalRead(buttonPin1);
-    buttonState2 = digitalRead(buttonPin2);
-    buttonState3 = digitalRead(buttonPin3);
-    buttonState4 = digitalRead(buttonPin4);
-
-  }
-
-  //--------------------------------------------------------------
-
-  buttonState1 = digitalRead(buttonPin1);
-  buttonState2 = digitalRead(buttonPin2);
-  buttonState3 = digitalRead(buttonPin3);
-  buttonState4 = digitalRead(buttonPin4);
-
-
-
-  Serial.println ("Button Status 1");
-  Serial.println (buttonState1);
-  Serial.println ("Button Status 2");
-  Serial.println (buttonState2);
-  Serial.println ("Button Status 3");
-  Serial.println (buttonState3);
-  Serial.println ("Button Status 4");
-  Serial.println (buttonState4);
-
-  if (buttonStateStart == 1 and startbutton_pressed == 3) {
-    if ((buttonState3 == 0) && (buttonState1 == 1) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 0))  {                            //erstes Kriterium: Button_3 drÃ¼cken
-      Serial.println ("Knopf 3 gedrÃ¼ckt - richtig!");
-      digitalWrite (green3, HIGH);
-      delay(2000);
-      digitalWrite (green3, LOW);
-      a = a + 1;
-    }
-    //--------------------------------------------------------------
-    else if (((buttonState1 == 0) && (a == 0)) || ((buttonState2 == 0) && (a == 0)) || ((buttonState4 == 0) && (a == 0)) ) {            //erstes Kriterium Fehler: Button_1 _2 oder _4 drÃ¼cken
-      for (int i; i < 10; i++)
-      {
-        Serial.println("falsch - erstes Kriterium!");
-
-        falseSequencing();
-
-      }
-      a = 0;
-    }
-
-    //--------------------------------------------------------------
-
-    else                              //erstes Kriterium: nichts gedrÃ¼ckt
-    {
-      nothingPressed();
-    }
-
-    //--------------------------------------------------------------
-
-    if ((buttonState3 == 1) && (buttonState1 == 0) && (buttonState2 == 1) && (buttonState4 == 1) && (a == 1)) {
-
-      Serial.println("Knopf 1 nach 3 gedrÃ¼ckt - richtig!");
-
-      digitalWrite (green1, HIGH);
-      delay(2000);
-      digitalWrite (green1, LOW);
-
-      a = a + 1; //a ist jetzt 2
-
-    }
-
-    //--------------------------------------------------------------
-
-    else if  (((buttonState2 == 0) && (a == 1)) || ((buttonState4 == 0) && (a == 1)) || ((buttonState3 == 0) && (a == 1)) )  {
-      for (int i; i < 10; i++)
-      {
-        Serial.println("falsch - zweites Kriterium!");
-
-        falseSequencing();
-
-      }
-      a = 0;
-    }
-
-    else                              //zweites Kriterium: nichts gedrÃ¼ckt
-    {
-      nothingPressed();
-    }
-
-
-    //--------------------------------------------------------------
-
-    if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 0) && (buttonState4 == 1) && (a == 2)) {
-      Serial.println("Knopf 2 nach 1 gedrÃ¼ckt - richtig!");
-
-      digitalWrite (green2, HIGH);
-      delay(2000);
-      digitalWrite (green2, LOW);
-
-      a = a + 1; //a ist jetzt 3
-
-    }
-
-    //--------------------------------------------------------------
-
-    else if  ( ((buttonState3 == 0) && (a == 2)) || ((buttonState4 == 0) && (a == 2)) || ((buttonState1 == 0) && (a == 2)))  {
-      for (int i; i < 10; i++)
-      {
-        Serial.println("falsch - drittes Kriterium!");
-
-        falseSequencing();
-
-      }
-      a = 0;
-    }
-
-    else                              //drittes Kriterium: nichts gedrÃ¼ckt
-    {
-      nothingPressed();
-    }
-
-    //--------------------------------------------------------------
-
-    if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 1) && (buttonState4 == 0) && (a == 3)) {
-      Serial.println("Knopf 4 nach 1 gedrÃ¼ckt - richtig!");
-
-      digitalWrite (green4, HIGH);
-      delay(2000);
-      digitalWrite (green4, LOW);
-
-      a = a + 1; //a ist jetzt 4
-
-    }
-
-    //--------------------------------------------------------------
-
-    else if  (((buttonState1 == 0) && (a == 3)) || ((buttonState3 == 0) && (a == 3)) || ((buttonState2 == 0) && (a == 3)) )  {
-      for (int i; i < 10; i++)
-      {
-        Serial.println("falsch - viertes Kriterium!");
-
-        falseSequencing();
-
-      }
-      a = 0;
-    }
-
-    else                              //viertes Kriterium: nichts gedrÃ¼ckt
-    {
-      nothingPressed();
-    }
-
-    //--------------------------------------------------------------
-
-    if ((buttonState3 == 1) && (buttonState1 == 1) && (buttonState2 == 0) && (buttonState4 == 1) && (a == 4)) {
-      Serial.println("Knopf 2 nach 4 gedrÃ¼ckt - richtig!");
-
-      digitalWrite (green2, HIGH);
-      delay(2000);
-      digitalWrite (green2, LOW);
-
-      a = a + 1; //a ist jetzt 5
-
-    }
-
-    //--------------------------------------------------------------
-
-    else if  (((buttonState1 == 0) && (a == 4)) || ((buttonState3 == 0) && (a == 4)) || ((buttonState4) && (a == 4)) )  {
-      for (int i; i < 10; i++)
-      {
-        Serial.println("falsch - fÃ¼nftes Kriterium!");
-
-        falseSequencing();
-
-      }
-      a = 0;
-    }
-
-    else                              //fÃ¼nftes Kriterium: nichts gedrÃ¼ckt
-    {
-      nothingPressed();
-    }
-
-    if (a == 5)
-    {
-      buttonStateStart = 0;
-      for (int r = 0; r < 10; r++) {
-
-        correctSequencing();
-      }
-      check_4 = 0;
-      check_5 = 1;
-      Serial.println("Spiel gewonnen - CODE lautet ABC123!");
-      check_2 = 0;
-      check_3 = 1;
-      delay(10000);
-      a = 0;
-
-    }
-  }
-
 }
 
-void falseSequencing() {
-
-  digitalWrite (red1, HIGH);
-  digitalWrite (red2, HIGH);
-  digitalWrite (red3, HIGH);
-  digitalWrite (red4, HIGH);
-  delay(100);
-  digitalWrite (red1, LOW);
-  digitalWrite (red2, LOW);
-  digitalWrite (red3, LOW);
-  digitalWrite (red4, LOW);
-  delay(100);
-
+void zeigeFolge() {
+  for (int i = 0; i <= 4; i++){
+    digitalWrite(greenleds[intfolge_set[i]-1], HIGH);
+    delay(300);
+    digitalWrite(greenleds[intfolge_set[i]-1], LOW);
+    delay(100);
+  }
 }
-
-void correctSequencing() {
-
-  digitalWrite (green1, HIGH);
-  digitalWrite (green2, HIGH);
-  digitalWrite (green3, HIGH);
-  digitalWrite (green4, HIGH);
-  delay(100);
-  digitalWrite (green1, LOW);
-  digitalWrite (green2, LOW);
-  digitalWrite (green3, LOW);
-  digitalWrite (green4, LOW);
-  delay(100);
-}
-
-void nothingPressed() {
-
-  digitalWrite (green1, LOW);
-  digitalWrite (green2, LOW);
-  digitalWrite (green3, LOW);
-  digitalWrite (green4, LOW);
-
-  digitalWrite (red1, LOW);
-  digitalWrite (red2, LOW);
-  digitalWrite (red3, LOW);
-  digitalWrite (red4, LOW);
+void resetStangenspiel() {
+  for (unsigned int i = 0; i < _myArray_cnt2; i++) {
+    folge_in[i] = ' ';
+  }
+  zaehler2 = 0;
 }
 
 //--------------------------------------------------------------
