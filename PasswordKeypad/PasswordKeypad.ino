@@ -12,16 +12,18 @@
     V0.6    21.10.2017 Neuprogrammierung Stangenspiel, Umbenennung Keypad in Keypad1
     V0.7    06.11.1017 Änderung des Stangenspiels in Matrix, Hinzufügen der Kontrollstrukturen, Setzen des Checkpoints ausstehend!! Z475
     V0.7.1  11.11.2017 Änderung der Deklaration der LEDs des Stangenspiels, LED Feedback hinzugefügt
+    V0.8    09.02.2018 Änderung des Rätselspiels in Matrix
 */
 #include <Keypad.h>
 #include <LiquidCrystal.h>
 #include "SevSeg.h"
 
 
-#define SoftwareVersion "201711111823"  // IMMER AKTUALISIEREN YYYYMMDDHHMM
+#define SoftwareVersion "201802092007"  // IMMER AKTUALISIEREN YYYYMMDDHHMM
 
 #define _myArray_cnt 8 //Array Groesse Keypad
 #define _myArray_cnt2 5 //Array Groesse Stangenspiel
+#define _myArray_cnt_raetsel 4 //Array Groesse Rätselspiel
 
 //--------------------Station colourCards------------------------------
 #define S0 27
@@ -36,16 +38,6 @@
 #define progressLED2 32
 #define progressLED3 33
 //--------------------Station colourCards------------------------------
-//--------------------Rätselspiel-------------------------------
-#define quizButton1 37
-#define quizButton2 38
-#define quizButton3 39
-#define quizButton4 40
-#define quizLED1 41
-#define quizLED2 42
-#define quizLED3 43
-#define quizLED4 44
-//--------------------Rätselspiel-------------------------------
 
 unsigned int check_1 = 1; //Variable um Keypad zu aktivieren, 0 = aus
 unsigned int check_2 = 0; //Variable um Colourcards zu aktivieren, 0 = aus
@@ -54,9 +46,10 @@ unsigned int check_4 = 0; //Variable um Stangenspiel zu aktivieren, 0 = aus
 unsigned int check_5 = 0; //Variable um die Bombe zu öffnen, 0 = zu
 unsigned int countdown = 0; //Vriable um den Countdown zu starten
 
-LiquidCrystal lcd(14, 13, 12, 11, 10, 9); // Creates lcd object
 
 //---------------------Keypad-----------------------------------
+
+LiquidCrystal lcd(14, 13, 12, 11, 10, 9); // Creates lcd object
 
 const byte ROWS = 4; //four rows
 const byte COLS = 3; //three columns
@@ -106,6 +99,30 @@ int intfolge_set[5] = {3, 1, 2, 4, 2};
 
 //--------------------------------------------------------------
 
+//--------------------Rätselspiel-------------------------------
+
+const byte ROWS_r = 1;
+const byte COLS_r = 4;
+
+char raetsel_keys[ROWS_r][COLS_r] = {
+  {'1', '2', '3', '4'}
+};
+
+char quizButton[_myArray_cnt_raetsel] = {'2', '3', '1', '4'};
+
+byte row_rPins[ROWS_r] = {45};
+byte col_rPins[COLS_r] = {37, 38, 39, 40};
+
+Keypad keypad3 = Keypad( makeKeymap(raetsel_keys), row_rPins, col_rPins, ROWS_r, COLS_r);
+
+int quizFragen = 0;
+
+int quizleds[4] = {41, 42, 43, 44};
+int intanwser_set[4] = {2, 3, 1, 4};
+
+//--------------------Rätselspiel-------------------------------
+
+
 //--------------------Station colourCards------------------------------
 unsigned int red = 0;      // rgb values stored here
 unsigned int green = 0;
@@ -114,18 +131,6 @@ int colourCardCounter = 0;  // sequencing
 bool colourCardRemoved = true; // flag needed to exit for-loop after correct card is inserted
 //--------------------------------------------------------------
 
-//--------------------Rätselspiel-------------------------------
-int quizCounter = 0;
-int quizSequence1[4] = {1, 0, 1, 1}; // define ABCD answers, B
-int quizSequence2[4] = {1, 1, 0, 1}; // C
-int quizSequence3[4] = {0, 1, 1, 1}; // A
-int quizSequence4[4] = {1, 1, 1, 0}; // D
-bool quizButtonWait = true;
-int buttonRead1 = 0;
-int buttonRead2 = 0;
-int buttonRead3 = 0;
-int buttonRead4 = 0;
-//--------------------Rätselspiel-------------------------------
 
 //--------------------Countdown-----------------------------
 
@@ -153,14 +158,13 @@ void setup() {
 
   keypad1.addEventListener(keypadEvent); // Add an event listener for this keypad
   keypad2.addEventListener(stangenspielEvent); //Add Event Listener fuer Stangenspiel
+  keypad3.addEventListener(raetselspielEvent); //Add Event Listener fuer Raetselspiel
 
   //--------------------Stangenspiel------------------------------
   for(int i = 0; i <= 3; i++){
     pinMode(redleds[i], OUTPUT);
     pinMode(greenleds[i], OUTPUT);
   }
-
-  //pinMode(startButton, INPUT_PULLUP);
 
   //--------------------------------------------------------------
 
@@ -186,14 +190,11 @@ void setup() {
   //--------------------------------------------------------------
 
   //--------------------Rätselspiel-------------------------------
-  pinMode(quizButton1, INPUT_PULLUP);
-  pinMode(quizButton2, INPUT_PULLUP);
-  pinMode(quizButton3, INPUT_PULLUP);
-  pinMode(quizButton4, INPUT_PULLUP);
-  pinMode(quizLED1, OUTPUT);
-  pinMode(quizLED2, OUTPUT);
-  pinMode(quizLED3, OUTPUT);
-  pinMode(quizLED4, OUTPUT);
+
+  for(int i = 0; i <= 3; i++){
+    pinMode(quizleds[i], OUTPUT);
+  }
+
   //--------------------Rätselspiel-------------------------------
 
   //--------------------Countdown---------------------------------
@@ -230,7 +231,7 @@ void loop() {
   }
 
   if (check_5) {
-    openBomb();
+    ende();
   }
 }
 
@@ -450,7 +451,7 @@ void stangenspielEvent(KeypadEvent folge) {
 
       if (folge == folge_set[(zaehler2)-1] and zaehler2 >= 1){ //Gezogene Stange ist korrekt
         folge_in[(zaehler2)-1] = folge;
-        Serial.println("Marker1");
+        Serial.println("Correct");
         Serial.println(folge_in[(zaehler2)-1]);
         correctSequencing((int(folge)-49));
         zaehler2 += 1;
@@ -479,6 +480,7 @@ void stangenspielEvent(KeypadEvent folge) {
 
 void stangenSpiel() {
   //Zielabfolge: 3 - 1 -2 - 4 - 2
+  Serial.println("stangenSpiel() aktiviert");
   char folge = keypad2.getKey();
 
   if (folge) {
@@ -529,100 +531,50 @@ void resetStangenspiel() {
 
 //--------------------Rätselspiel-------------------------------
 
+void raetselspielEvent(KeypadEvent antwort){
+  switch (keypad3.getState()){
+    case PRESSED:
+      if (antwort == quizButton[quizFragen]) {
+        Serial.println("Correct answer");
+        digitalWrite(quizleds[intanwser_set[quizFragen]], HIGH);
+        delay(1000);
+        digitalWrite(quizleds[intanwser_set[quizFragen]], LOW);
+        quizFragen += 1;
+        }
+        
+        else {
+          Serial.println("FALSE"); //Plus Zeitstrafe
+          for (int a = 0; a <= 3; a++){
+            for (int i = 0; i <= 3; i++){
+              digitalWrite(quizleds[i], HIGH);
+              delay(300);
+              digitalWrite(quizleds[i], LOW);
+              delay(300);
+            }
+          }
+        
+      }
+
+    case RELEASED:
+      if (antwort = ' ') {
+        break;
+      }
+
+    case HOLD:
+      if (antwort = ' ') {
+       break;
+      }
+  }
+}
 void raetselSpiel() {
   Serial.println("raetselSpiel() aktiviert");
-  buttonRead1 = digitalRead(quizButton1);
-  buttonRead2 = digitalRead(quizButton2);
-  buttonRead3 = digitalRead(quizButton3);
-  buttonRead4 = digitalRead(quizButton4);
-  Serial.print("buttonRead1: ");
-  Serial.println(buttonRead1);
-  Serial.print("buttonRead2: ");
-  Serial.println(buttonRead2);
-  Serial.print("buttonRead3: ");
-  Serial.println(buttonRead3);
-  Serial.print("buttonRead4: ");
-  Serial.println(buttonRead4);
-  Serial.print("quizButtonWait: ");
-  Serial.println(quizButtonWait);
-  Serial.print("quizCounter: ");
-  Serial.println(quizCounter);
-  delay(100);
 
-  switch (quizCounter) { // progress bar
-    case 0:
-      digitalWrite(quizLED1, LOW);
-      digitalWrite(quizLED2, LOW);
-      digitalWrite(quizLED3, LOW);
-      digitalWrite(quizLED4, LOW);
-      break;
-    case 1:
-      digitalWrite(quizLED1, HIGH);
-      break;
-    case 2:
-      digitalWrite(quizLED1, HIGH);
-      digitalWrite(quizLED2, HIGH);
-      break;
-    case 3:
-      digitalWrite(quizLED1, HIGH);
-      digitalWrite(quizLED2, HIGH);
-      digitalWrite(quizLED3, HIGH);
-      break;
-    case 4:
-      digitalWrite(quizLED1, HIGH);
-      digitalWrite(quizLED2, HIGH);
-      digitalWrite(quizLED3, HIGH);
-      digitalWrite(quizLED4, HIGH);
-      check_3 = 0;
-      check_4 = 1;
-      break;
-  }
+  char antwort = keypad3.getKey();
 
-
-  if (quizCounter != 4) { // prevents from entering loop once this station is solved
-    if (quizButtonWait && (buttonRead1 == 0 || buttonRead2 == 0 || buttonRead3 == 0 || buttonRead4 == 0)) { // Ready to enter loop as long as no buttons are pressed
-      if (quizCounter == 0 && buttonRead1 == quizSequence1[0] && buttonRead2 == quizSequence1[1] && buttonRead3 == quizSequence1[2] && buttonRead4 == quizSequence1[3]) {
-        quizCounter = 1;
-        quizButtonWait = false;
-      }
-      else if (quizCounter == 1 && buttonRead1 == quizSequence2[0] && buttonRead2 == quizSequence2[1] && buttonRead3 == quizSequence2[2] && buttonRead4 == quizSequence2[3]) {
-        quizCounter = 2;
-        quizButtonWait = false;
-      }
-      else if (quizCounter == 2 && buttonRead1 == quizSequence3[0] && buttonRead2 == quizSequence3[1] && buttonRead3 == quizSequence3[2] && buttonRead4 == quizSequence3[3]) {
-        quizCounter = 3;
-        quizButtonWait = false;
-      }
-      else if (quizCounter == 3 && buttonRead1 == quizSequence4[0] && buttonRead2 == quizSequence4[1] && buttonRead3 == quizSequence4[2] && buttonRead4 == quizSequence4[3]) {
-        quizCounter = 4;
-        check_3 = 0;
-        check_4 = 1;
-        quizButtonWait = false;
-      }
-      else {
-        //quizCounter = 0; // Here we start over
-        for (int i = 0; i < 3; i++) {
-          digitalWrite(quizLED1, HIGH);
-          digitalWrite(quizLED2, HIGH);
-          digitalWrite(quizLED3, HIGH);
-          digitalWrite(quizLED4, HIGH);
-          delay(300);
-          digitalWrite(quizLED1, LOW);
-          digitalWrite(quizLED2, LOW);
-          digitalWrite(quizLED3, LOW);
-          digitalWrite(quizLED4, LOW);
-          delay(300);
-          quizButtonWait = false;
-        }
-      }
-    }
-  }
-
-  if (buttonRead1 == 1 && buttonRead2 == 1 && buttonRead3 == 1 && buttonRead4 == 1) {
-    quizButtonWait = true; // Once all buttons are released, it is ready to enter the loop again.
-  }
-  else {
-    quizButtonWait = false;
+  if (antwort) {
+    Serial.println(antwort);
+    Serial.println(quizFragen);
+    Serial.println(quizButton); //Antworten
   }
 }
 
@@ -817,9 +769,9 @@ int countDown() {
 }
 //--------------------------------------------------------------
 
-//--------------------ÖffneBombe--------------------------------
+//--------------------Ende-Reset--------------------------------
 
-void openBomb() {
+void ende() {
 
 }
 
