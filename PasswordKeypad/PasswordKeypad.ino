@@ -534,7 +534,7 @@ void resetStangenspiel() {
 void raetselspielEvent(KeypadEvent antwort){
   switch (keypad3.getState()){
     case PRESSED:
-      if (antwort == quizButton[quizFragen]) {
+      if (antwort == quizButton[quizFragen]){
         Serial.println("Correct answer");
         digitalWrite(quizleds[intanwser_set[quizFragen]], HIGH);
         delay(1000);
